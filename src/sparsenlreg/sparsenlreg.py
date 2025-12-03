@@ -102,7 +102,7 @@ def perform_fit_for_varying_beta_to_assess_tradeoff(X, y, betas):
     return models
 
 
-def plot_tradeoff(betas, r2s, Ns_coeff):
+def export_tradeoff_plot(betas, r2s, Ns_coeff):
     fig, ax1 = plt.subplots()
     ax1.set_xscale("log")
     ax1.set_xlabel("Hyper-parameter $\\beta$")
@@ -122,7 +122,7 @@ def plot_tradeoff(betas, r2s, Ns_coeff):
     plt.title("Accuracy-Simplicity Tradeoff plot")
     plt.grid(True, linestyle="--", alpha=0.6)
     plt.tight_layout()
-    plt.savefig("tradeoff_plot.svg")
+    plt.savefig("tradeoff.svg")
 
 
 def gather_best_models(models, betas, r2s, Ns_coeffs, N_coeff_max: int):
@@ -171,7 +171,7 @@ def display_best_models(best_models, X_names, y_name="f(X)"):
         print("")
 
 
-def generate_latex_table(best_models, X_names, y_name):
+def display_latex_summary(best_models, X_names, y_name):
     latex_table = []
     for _model_data in best_models:
         cst = _model_data["model"].intercept_
@@ -201,7 +201,44 @@ def generate_latex_table(best_models, X_names, y_name):
 
     latex_output += "\\\\\n\\hline\n\\end{tabular}\n"
 
-    return latex_output
+    print("=== Summary in a LaTeX table")
+    print(latex_output)
+
+
+def export_actual_vs_predicted_plot(best_models, X, y):
+    plt.figure()
+    ax = plt.gca()
+    colors = plt.rcParams["axes.prop_cycle"].by_key()["color"]
+    for m, c in zip(best_models, colors):
+        PredictionErrorDisplay.from_estimator(
+            m["model"],
+            X,
+            y,
+            kind="actual_vs_predicted",
+            ax=ax,
+            scatter_kwargs={"color": c},
+        )
+    plt.grid()
+    plt.savefig("actual_vs_predicted.svg")
+
+
+def export_best_models_predictions_plot(
+    best_models, X_base_feat, X, y, base_feature_names, y_name
+):
+    plt.figure()
+    plt.xlabel(rf"Feature : ${base_feature_names[0]}$")
+    plt.ylabel(rf"Output : ${y_name}$")
+    # Add the models
+    for m in best_models:
+        y_pred = m["model"].predict(X)
+        label = f"Model : $R^2 = {m['r2']:.3f}$, $N_\\mathrm{{coeff}} = {m['N_coeff']}$"
+        plt.plot(X_base_feat[:, 0], y_pred, label=label, ls="--", marker="x")
+    # Add the raw data
+    plt.scatter(X_base_feat[:, 0], y, color="tab:red", marker="o", label="Data")
+    plt.grid()
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig("predictions_vs_data.svg")
 
 
 def main():
@@ -257,47 +294,18 @@ def main():
     r2s = np.array([r2_score(y, m.predict(X)) for m in models])
     Ns_coeffs = np.array([np.count_nonzero(m.coef_) + include_bias for m in models])
 
-    # Display the tradeoff plot
-    plot_tradeoff(betas, r2s, Ns_coeffs)
-
     # Gather the best models per number of coefficients in a dictionary
     best_models = gather_best_models(models, betas, r2s, Ns_coeffs, N_coeff_max)
     # Display the best models
     display_best_models(best_models, X_names, y_name)
-    latex_table = generate_latex_table(best_models, X_names, y_name)
-    print(latex_table)
+    display_latex_summary(best_models, X_names, y_name)
 
-    # Initialize the figure
-    plt.figure()
-    plt.xlabel(rf"Feature : ${base_feature_names[0]}$")
-    plt.ylabel(rf"Output : ${y_name}$")
-    # Add the models
-    for m in best_models:
-        y_pred = m["model"].predict(X)
-        label = f"Model : $R^2 = {m['r2']:.3f}$, $N_\\mathrm{{coeff}} = {m['N_coeff']}$"
-        plt.plot(X_base_feat[:, 0], y_pred, label=label, ls="--", marker="x")
-    # Add the raw data
-    plt.scatter(X_base_feat[:, 0], y, color="tab:red", marker="o", label="Data")
-    plt.grid()
-    plt.legend()
-    plt.tight_layout()
-    plt.savefig("best_models_comparison_physics.svg")
-
-    # Display te actual vs predicted plot
-    plt.figure()
-    ax = plt.gca()
-    colors = plt.rcParams["axes.prop_cycle"].by_key()["color"]
-    for m, c in zip(best_models, colors):
-        PredictionErrorDisplay.from_estimator(
-            m["model"],
-            X,
-            y,
-            kind="actual_vs_predicted",
-            ax=ax,
-            scatter_kwargs={"color": c},
-        )
-    plt.grid()
-    plt.savefig("best_models_comparison_data_science.svg")
+    # Plots
+    export_tradeoff_plot(betas, r2s, Ns_coeffs)
+    export_actual_vs_predicted_plot(best_models, X, y)
+    export_best_models_predictions_plot(
+        best_models, X_base_feat, X, y, base_feature_names, y_name
+    )
 
 
 if __name__ == "__main__":
