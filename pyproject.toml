@@ -1,0 +1,37 @@
+
+[project]
+name = "sparsenlreg"
+version="2025.12.03"
+authors = [
+    {name = "Flavien Loiseau", email = "flavien.loiseau@ensta.fr"},
+]
+description = "Polynomial sparse regression using non-linear features for symbolic regression."
+readme = "README.md"
+license = { file = "LICENSE"}
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+	"pandas",
+	"numpy",
+	"sympy",
+	"scikit-learn",
+	"matplotlib",
+]
+
+[project.urls]
+# Documentation = "https://floiseau.github.io/sparsenlreg/"
+Source = "https://github.com/floiseau/sparenlreg"
+
+[project.scripts]
+sparsenlreg = "sparsenlreg:sparsenlreg.main"
+
+[build-system]
+requires = ["setuptools >= 77.0.3"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["sparsenlreg*"]
