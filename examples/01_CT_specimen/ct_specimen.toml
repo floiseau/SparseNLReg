@@ -11,7 +11,7 @@ output_name = "\\hat{K}_{I}"
 
 [polynomial]
 degree = 3
-include_bias = true
+fit_intercept = true
 
 [tradeoff_exploration]
 N_fit = 128

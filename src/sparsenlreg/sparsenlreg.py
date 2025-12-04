@@ -69,7 +69,6 @@ def transform_base_features_to_polynomial_features(
     X_base_feat,
     X_base_feat_names,
     degree=10,
-    include_bias=True,
 ):
     """
     Convert an array of base features into an array of polynomial features.
@@ -78,20 +77,19 @@ def transform_base_features_to_polynomial_features(
     - X_base_feat: array-like, input features
     - X_base_feat_names: array-like, names of input features
     - degree: int, degree of polynomial features (default: 10)
-    - include_bias: bool, add a constant term to the polynomial if True
 
     Returns:
     - X: ndarray, matrix of polynomial features
     - X_names: list, names of the polynomial features
     """
     # Generate polynomial features
-    pf = PolynomialFeatures(degree=degree, include_bias=True)
+    pf = PolynomialFeatures(degree=degree, include_bias=False)
     X = pf.fit_transform(X_base_feat)
     X_names = pf.get_feature_names_out(X_base_feat_names)
     return X, X_names
 
 
-def perform_fit_for_varying_beta_to_assess_tradeoff(X, y, betas):
+def perform_fit_for_varying_beta_to_assess_tradeoff(X, y, betas, fit_intercept):
     """
     Perform Lasso regression for a range of beta values.
 
@@ -117,7 +115,7 @@ def perform_fit_for_varying_beta_to_assess_tradeoff(X, y, betas):
     # Perform the sparse regression for different values of beta
     for i, beta in enumerate(betas):
         _model = linear_model.Lasso(
-            alpha=beta, fit_intercept=True, tol=1e-6, max_iter=1_000
+            alpha=beta, fit_intercept=fit_intercept, tol=1e-6, max_iter=1_000
         )
         _model.fit(X, y)
         models[i] = _model
@@ -288,7 +286,7 @@ def main():
     output_name = config["model_output"]["output_name"]
     # Polynomial parameters
     degree = config["polynomial"]["degree"]
-    include_bias = config["polynomial"]["include_bias"]
+    fit_intercept = config["polynomial"]["fit_intercept"]
     # Tradeoff exploration
     N_fit = config["tradeoff_exploration"]["N_fit"]
     log_beta_min = config["tradeoff_exploration"]["log_beta_min"]
@@ -304,7 +302,6 @@ def main():
         X_base_feat,
         base_feature_names,
         degree=degree,
-        include_bias=include_bias,
     )
     # Create the output vector
     y = generate_output(df, output)
@@ -312,9 +309,9 @@ def main():
 
     # Fit for different values of hyper-parameter beta to assess the tradeoff
     betas = 10 ** np.linspace(log_beta_min, log_beta_max, num=N_fit)
-    models = perform_fit_for_varying_beta_to_assess_tradeoff(X, y, betas)
+    models = perform_fit_for_varying_beta_to_assess_tradeoff(X, y, betas, fit_intercept)
     r2s = np.array([r2_score(y, m.predict(X)) for m in models])
-    Ns_coeffs = np.array([np.count_nonzero(m.coef_) + include_bias for m in models])
+    Ns_coeffs = np.array([np.count_nonzero(m.coef_) + fit_intercept for m in models])
 
     # Gather the best models per number of coefficients in a dictionary
     best_models = gather_best_models(models, betas, r2s, Ns_coeffs, N_coeff_max)
