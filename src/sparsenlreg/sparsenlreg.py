@@ -1,6 +1,6 @@
 import argparse
 import tomllib
-from typing import List
+from typing import List, Union
 
 import pandas as pd
 import sympy as sp
@@ -18,29 +18,51 @@ def parse_config(file_path: str) -> dict:
     return config
 
 
+def _evaluate_expression_or_column(
+    df: pd.DataFrame,
+    expr: Union[str, List[str]],
+) -> Union[np.ndarray, List[np.ndarray]]:
+    """
+    Helper function to evaluate either a column or a SymPy expression.
+    If expr is a list, returns a list of arrays; otherwise, returns a single array.
+    """
+    is_list = isinstance(expr, list)
+    exprs = expr if is_list else [expr]
+
+    results = []
+    for e in exprs:
+        if e in df.columns:
+            results.append(df[e].to_numpy())
+        else:
+            expr_sym = sp.sympify(e)
+            symbols = list(expr_sym.free_symbols)
+            symbol_names = [symb.name for symb in symbols]
+            f = sp.lambdify(symbols, expr_sym, "numpy")
+            f_args = (df[name] for name in symbol_names)
+            results.append(f(*f_args))
+
+    return results if is_list else results[0]
+
+
 def generate_base_features(
     df: pd.DataFrame,
     features: List[str],
-):
-    # Create the list of features from observations and non-linear terms
-    X_base_feat_list = []
-    for feat in features:
-        if feat in df.columns:
-            X_base_feat_list.append(df[feat])
-        else:
-            # Convert the feature to a SymPy expression
-            feat_expr = sp.sympify(feat)
-            # Exctract the symbols
-            symbols = list(feat_expr.free_symbols)
-            symbol_names = [symb.name for symb in symbols]
-            # Convert to the SymPy expression to a numerical function
-            f = sp.lambdify(symbols, feat_expr, "numpy")
-            # Evaluate the function
-            f_args = (df[name] for name in symbol_names)
-            X_base_feat_list.append(f(*f_args))
-    # Gather the features into an array
-    X_base_feat = np.column_stack(X_base_feat_list)
-    return X_base_feat
+) -> np.ndarray:
+    """
+    Generate base features from a DataFrame and a list of feature expressions.
+    """
+    X_base_feat_list = _evaluate_expression_or_column(df, features)
+    return np.column_stack(X_base_feat_list)
+
+
+def generate_output(
+    df: pd.DataFrame,
+    output: str,
+) -> np.ndarray:
+    """
+    Generate output from a DataFrame and an output expression.
+    """
+    return _evaluate_expression_or_column(df, output)
 
 
 def transform_base_features_to_polynomial_features(
@@ -276,9 +298,6 @@ def main():
 
     # Read the CSV file
     df = pd.read_csv(config["data"]["dataset"], comment="#")
-    # Create the output vector
-    y = df[output].to_numpy()
-    y_name = output_name
     # Generate the features
     X_base_feat = generate_base_features(df, base_features)
     X, X_names = transform_base_features_to_polynomial_features(
@@ -287,6 +306,9 @@ def main():
         degree=degree,
         include_bias=include_bias,
     )
+    # Create the output vector
+    y = generate_output(df, output)
+    y_name = output_name
 
     # Fit for different values of hyper-parameter beta to assess the tradeoff
     betas = 10 ** np.linspace(log_beta_min, log_beta_max, num=N_fit)
