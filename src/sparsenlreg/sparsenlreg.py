@@ -185,7 +185,7 @@ def display_best_models(best_models, X_names, y_name="f(X)"):
 
         # Print the model in LaTeX form
         print("LaTeX expression:")
-        print(f"{y_name}(a) =\n\t{cst:+.3g}", end="\n")
+        print(f"{y_name} =\n\t{cst:+.3g}", end="\n")
         for i, coeff in enumerate(coeffs):
             if not coeff == 0:
                 print(f"\t{coeff:+.3g} {X_names[i]}", end="\n")
