@@ -162,6 +162,7 @@ def gather_best_models(models, betas, r2s, Ns_coeffs, N_coeff_max: int):
                 "r2": r2s[mask][id_best],
                 "N_coeff": N_c,
                 "beta": betas[mask][id_best],
+                "label": f"Model : $N_\\mathrm{{coeff}} = {N_c}$, $R^2 = {r2s[mask][id_best]:.3f}$",
             }
         )
 
@@ -236,8 +237,9 @@ def export_actual_vs_predicted_plot(best_models, X, y):
             y,
             kind="actual_vs_predicted",
             ax=ax,
-            scatter_kwargs={"color": c},
+            scatter_kwargs={"color": c, "label": m["label"]},
         )
+    plt.legend()
     plt.grid()
     plt.savefig("actual_vs_predicted.svg")
 
@@ -251,8 +253,7 @@ def export_best_models_predictions_plot(
     # Add the models
     for m in best_models:
         y_pred = m["model"].predict(X)
-        label = f"Model : $R^2 = {m['r2']:.3f}$, $N_\\mathrm{{coeff}} = {m['N_coeff']}$"
-        plt.plot(X_base_feat[:, 0], y_pred, label=label, ls="--", marker="x")
+        plt.plot(X_base_feat[:, 0], y_pred, label=m["label"], ls="--", marker="x")
     # Add the raw data
     plt.scatter(X_base_feat[:, 0], y, color="tab:red", marker="o", label="Data")
     plt.grid()
