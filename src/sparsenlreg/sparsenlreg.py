@@ -1,5 +1,4 @@
 import argparse
-import tomllib
 from typing import List, Union
 
 import pandas as pd
@@ -10,12 +9,7 @@ from sklearn.preprocessing import PolynomialFeatures
 from sklearn.metrics import r2_score, PredictionErrorDisplay
 import matplotlib.pyplot as plt
 
-
-def parse_config(file_path: str) -> dict:
-    """Parse the TOML config file and return a dictionary."""
-    with open(file_path, "rb") as f:
-        config = tomllib.load(f)
-    return config
+from .configuration import parse_config_file
 
 
 def _evaluate_expression_or_column(
@@ -239,8 +233,10 @@ def export_actual_vs_predicted_plot(best_models, X, y):
             ax=ax,
             scatter_kwargs={"color": c, "label": m["label"]},
         )
+    plt.title("Actual vs. Predicted plot")
     plt.legend()
     plt.grid()
+    plt.tight_layout()
     plt.savefig("actual_vs_predicted.svg")
 
 
@@ -268,6 +264,8 @@ def main():
     #   Polynomial features: Polynomial combinations of the base features. Those are linearly combined to form the model.
     #   Output: raw input from the data that serves as output of the model
     #   Coefficients: Coefficient of the fitted polynomial
+
+    # Create the CLI argument parser
     parser = argparse.ArgumentParser(
         prog="sparsenlreg",
         description="TODO",
@@ -278,44 +276,35 @@ def main():
     print(f"Reading the configuration file : {args.config_file}.")
 
     # Read the configuration file
-    config = parse_config(args.config_file)
-    # Model features
-    base_features = config["model_features"]["base_features"]
-    base_feature_names = config["model_features"]["base_feature_names"]
-    # Model output
-    output = config["model_output"]["output"]
-    output_name = config["model_output"]["output_name"]
-    # Polynomial parameters
-    degree = config["polynomial"]["degree"]
-    fit_intercept = config["polynomial"]["fit_intercept"]
-    # Tradeoff exploration
-    N_fit = config["tradeoff_exploration"]["N_fit"]
-    log_beta_min = config["tradeoff_exploration"]["log_beta_min"]
-    log_beta_max = config["tradeoff_exploration"]["log_beta_max"]
-    # Model selection
-    N_coeff_max = config["model_selection"]["N_coeff_max"]
-
+    config = parse_config_file(args.config_file)
     # Read the CSV file
-    df = pd.read_csv(config["data"]["dataset"], comment="#")
+    df = pd.read_csv(config.dataset, comment="#")
+
     # Generate the features
-    X_base_feat = generate_base_features(df, base_features)
+    X_base_feat = generate_base_features(df, config.base_features)
     X, X_names = transform_base_features_to_polynomial_features(
         X_base_feat,
-        base_feature_names,
-        degree=degree,
+        config.base_feature_names,
+        degree=config.degree,
     )
     # Create the output vector
-    y = generate_output(df, output)
-    y_name = output_name
+    y = generate_output(df, config.output)
+    y_name = config.output_name
 
     # Fit for different values of hyper-parameter beta to assess the tradeoff
-    betas = 10 ** np.linspace(log_beta_min, log_beta_max, num=N_fit)
-    models = perform_fit_for_varying_beta_to_assess_tradeoff(X, y, betas, fit_intercept)
+    betas = 10 ** np.linspace(
+        config.log_beta_min, config.log_beta_max, num=config.N_fit
+    )
+    models = perform_fit_for_varying_beta_to_assess_tradeoff(
+        X, y, betas, config.fit_intercept
+    )
     r2s = np.array([r2_score(y, m.predict(X)) for m in models])
-    Ns_coeffs = np.array([np.count_nonzero(m.coef_) + fit_intercept for m in models])
+    Ns_coeffs = np.array(
+        [np.count_nonzero(m.coef_) + config.fit_intercept for m in models]
+    )
 
     # Gather the best models per number of coefficients in a dictionary
-    best_models = gather_best_models(models, betas, r2s, Ns_coeffs, N_coeff_max)
+    best_models = gather_best_models(models, betas, r2s, Ns_coeffs, config.N_coeff_max)
     # Display the best models
     display_best_models(best_models, X_names, y_name)
     display_latex_summary(best_models, X_names, y_name)
@@ -324,7 +313,7 @@ def main():
     export_tradeoff_plot(betas, r2s, Ns_coeffs)
     export_actual_vs_predicted_plot(best_models, X, y)
     export_best_models_predictions_plot(
-        best_models, X_base_feat, X, y, base_feature_names, y_name
+        best_models, X_base_feat, X, y, config.base_feature_names, y_name
     )
 
 

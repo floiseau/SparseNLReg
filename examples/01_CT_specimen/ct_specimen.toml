@@ -3,7 +3,7 @@ dataset = "data_ct_specimen.csv"
 
 [model_features]
 base_features = ["a", "exp(a)", "1/sqrt(1-a)"]
-base_feature_names = ["a/b", "\\exp(a/b)", "\\frac{1}{\\sqrt{b-a}}"]
+base_feature_names = ["a/b", "\\exp(a/b)", "\\frac{1}{\\sqrt{1-a/b}}"]
 
 [model_output]
 output = "KI_adim"
