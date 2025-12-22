@@ -1,62 +1,14 @@
 import argparse
-from typing import List, Union
 
 import pandas as pd
-import sympy as sp
 import numpy as np
 from sklearn import linear_model
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.metrics import r2_score, PredictionErrorDisplay
 import matplotlib.pyplot as plt
 
-from .configuration import parse_config_file
-
-
-def _evaluate_expression_or_column(
-    df: pd.DataFrame,
-    expr: Union[str, List[str]],
-) -> Union[np.ndarray, List[np.ndarray]]:
-    """
-    Helper function to evaluate either a column or a SymPy expression.
-    If expr is a list, returns a list of arrays; otherwise, returns a single array.
-    """
-    is_list = isinstance(expr, list)
-    exprs = expr if is_list else [expr]
-
-    results = []
-    for e in exprs:
-        if e in df.columns:
-            results.append(df[e].to_numpy())
-        else:
-            expr_sym = sp.sympify(e)
-            symbols = list(expr_sym.free_symbols)
-            symbol_names = [symb.name for symb in symbols]
-            f = sp.lambdify(symbols, expr_sym, "numpy")
-            f_args = (df[name] for name in symbol_names)
-            results.append(f(*f_args))
-
-    return results if is_list else results[0]
-
-
-def generate_base_features(
-    df: pd.DataFrame,
-    features: List[str],
-) -> np.ndarray:
-    """
-    Generate base features from a DataFrame and a list of feature expressions.
-    """
-    X_base_feat_list = _evaluate_expression_or_column(df, features)
-    return np.column_stack(X_base_feat_list)
-
-
-def generate_output(
-    df: pd.DataFrame,
-    output: str,
-) -> np.ndarray:
-    """
-    Generate output from a DataFrame and an output expression.
-    """
-    return _evaluate_expression_or_column(df, output)
+from sparsenlreg.configuration import parse_config_file
+from sparsenlreg.feature_manager import FeatureManager
 
 
 def transform_base_features_to_polynomial_features(
@@ -240,18 +192,16 @@ def export_actual_vs_predicted_plot(best_models, X, y):
     plt.savefig("actual_vs_predicted.svg")
 
 
-def export_best_models_predictions_plot(
-    best_models, X_base_feat, X, y, base_feature_names, y_name
-):
+def export_best_models_predictions_plot(best_models, X, y, X_names, y_name):
     plt.figure()
-    plt.xlabel(rf"Feature : ${base_feature_names[0]}$")
+    plt.xlabel(rf"Feature : ${X_names[1]}$")
     plt.ylabel(rf"Output : ${y_name}$")
     # Add the models
     for m in best_models:
         y_pred = m["model"].predict(X)
-        plt.plot(X_base_feat[:, 0], y_pred, label=m["label"], ls="--", marker="x")
+        plt.plot(X[:, 1], y_pred, label=m["label"], ls="--", marker="x")
     # Add the raw data
-    plt.scatter(X_base_feat[:, 0], y, color="tab:red", marker="o", label="Data")
+    plt.scatter(X[:, 1], y, color="tab:red", marker="o", label="Data")
     plt.grid()
     plt.legend()
     plt.tight_layout()
@@ -281,15 +231,9 @@ def main():
     df = pd.read_csv(config.dataset, comment="#")
 
     # Generate the features
-    X_base_feat = generate_base_features(df, config.base_features)
-    X, X_names = transform_base_features_to_polynomial_features(
-        X_base_feat,
-        config.base_feature_names,
-        degree=config.degree,
-    )
-    # Create the output vector
-    y = generate_output(df, config.output)
-    y_name = config.output_name
+    feature_manager = FeatureManager(config)
+    X, X_names = feature_manager.generate_polynomial_features(df)
+    y, y_name = feature_manager.generate_output(df)
 
     # Fit for different values of hyper-parameter beta to assess the tradeoff
     betas = 10 ** np.linspace(
@@ -312,9 +256,7 @@ def main():
     # Plots
     export_tradeoff_plot(betas, r2s, Ns_coeffs)
     export_actual_vs_predicted_plot(best_models, X, y)
-    export_best_models_predictions_plot(
-        best_models, X_base_feat, X, y, config.base_feature_names, y_name
-    )
+    export_best_models_predictions_plot(best_models, X, y, X_names, y_name)
 
 
 if __name__ == "__main__":
