@@ -1,8 +1,7 @@
 import argparse
 
 import pandas as pd
-import numpy as np
-from sklearn.metrics import r2_score, PredictionErrorDisplay
+from sklearn.metrics import PredictionErrorDisplay
 import matplotlib.pyplot as plt
 
 from sparsenlreg.configuration import parse_config_file
@@ -31,30 +30,6 @@ def export_tradeoff_plot(betas, r2s, Ns_coeff):
     plt.grid(True, linestyle="--", alpha=0.6)
     plt.tight_layout()
     plt.savefig("tradeoff.svg")
-
-
-def gather_best_models(models, betas, r2s, Ns_coeffs, N_coeff_max: int):
-    best_models = []
-    for N_c in range(0, N_coeff_max + 1):
-        mask = Ns_coeffs == N_c
-        if not mask.any():
-            continue
-        id_best = np.argmax(r2s[mask])
-        best_r2 = r2s[mask][id_best]
-        if best_r2 < 0:
-            continue
-        _model = np.array(models)[mask][id_best]
-        best_models.append(
-            {
-                "model": _model,
-                "r2": r2s[mask][id_best],
-                "N_coeff": N_c,
-                "beta": betas[mask][id_best],
-                "label": f"Model : $N_\\mathrm{{coeff}} = {N_c}$, $R^2 = {r2s[mask][id_best]:.3f}$",
-            }
-        )
-
-    return best_models
 
 
 def display_best_models(best_models, X_names, y_name="f(X)"):
@@ -179,25 +154,17 @@ def main():
 
     # Train the models
     model_trainer = ModelTrainer(config)
-    models = model_trainer.train(X, y)
+    models, betas = model_trainer.train(X, y)
+    r2s = model_trainer.assess_models_scores(models, X, y)
+    Ns_coeffs = model_trainer.count_nonzero_coefficients(models)
+    best_models = model_trainer.select_best_models(models, betas, r2s, Ns_coeffs)
 
-    # Assess the score
-    r2s = np.array([r2_score(y, m.predict(X)) for m in models])
-    # Comupute the number of coefficients
-    Ns_coeffs = np.array(
-        [np.count_nonzero(m.coef_) + config.fit_intercept for m in models]
-    )
-
-    # Gather the best models per number of coefficients in a dictionary
-    best_models = gather_best_models(
-        models, model_trainer.betas, r2s, Ns_coeffs, config.N_coeff_max
-    )
     # Display the best models
     display_best_models(best_models, X_names, y_name)
     display_latex_summary(best_models, X_names, y_name)
 
     # Plots
-    export_tradeoff_plot(model_trainer.betas, r2s, Ns_coeffs)
+    export_tradeoff_plot(betas, r2s, Ns_coeffs)
     export_actual_vs_predicted_plot(best_models, X, y)
     export_best_models_predictions_plot(best_models, X, y, X_names, y_name)
 
