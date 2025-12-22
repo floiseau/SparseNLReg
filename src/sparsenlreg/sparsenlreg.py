@@ -2,45 +2,12 @@ import argparse
 
 import pandas as pd
 import numpy as np
-from sklearn import linear_model
 from sklearn.metrics import r2_score, PredictionErrorDisplay
 import matplotlib.pyplot as plt
 
 from sparsenlreg.configuration import parse_config_file
 from sparsenlreg.feature_manager import FeatureManager
-
-
-def perform_fit_for_varying_beta_to_assess_tradeoff(X, y, betas, fit_intercept):
-    """
-    Perform Lasso regression for a range of beta values.
-
-    Parameters:
-    -----------
-    X : array-like
-        Input features.
-    y : array-like
-        Expected output values.
-    bets : int, optional
-        Number of beta values to fit (default: 128).
-    N_coeff_max : int, optional
-        Maximum number of coefficients to consider for best models (default: 8).
-    plot : bool, optional
-        Whether to plot the tradeoff (default: True).
-
-    Returns:
-    --------
-    TODO
-    """
-    # Create arrays to store the results
-    models = [None for _ in range(len(betas))]
-    # Perform the sparse regression for different values of beta
-    for i, beta in enumerate(betas):
-        _model = linear_model.Lasso(
-            alpha=beta, fit_intercept=fit_intercept, tol=1e-6, max_iter=1_000
-        )
-        _model.fit(X, y)
-        models[i] = _model
-    return models
+from sparsenlreg.model_trainer import ModelTrainer
 
 
 def export_tradeoff_plot(betas, r2s, Ns_coeff):
@@ -210,26 +177,27 @@ def main():
     X, X_names = feature_manager.generate_polynomial_features(df)
     y, y_name = feature_manager.generate_output(df)
 
-    # Fit for different values of hyper-parameter beta to assess the tradeoff
-    betas = 10 ** np.linspace(
-        config.log_beta_min, config.log_beta_max, num=config.N_fit
-    )
-    models = perform_fit_for_varying_beta_to_assess_tradeoff(
-        X, y, betas, config.fit_intercept
-    )
+    # Train the models
+    model_trainer = ModelTrainer(config)
+    models = model_trainer.train(X, y)
+
+    # Assess the score
     r2s = np.array([r2_score(y, m.predict(X)) for m in models])
+    # Comupute the number of coefficients
     Ns_coeffs = np.array(
         [np.count_nonzero(m.coef_) + config.fit_intercept for m in models]
     )
 
     # Gather the best models per number of coefficients in a dictionary
-    best_models = gather_best_models(models, betas, r2s, Ns_coeffs, config.N_coeff_max)
+    best_models = gather_best_models(
+        models, model_trainer.betas, r2s, Ns_coeffs, config.N_coeff_max
+    )
     # Display the best models
     display_best_models(best_models, X_names, y_name)
     display_latex_summary(best_models, X_names, y_name)
 
     # Plots
-    export_tradeoff_plot(betas, r2s, Ns_coeffs)
+    export_tradeoff_plot(model_trainer.betas, r2s, Ns_coeffs)
     export_actual_vs_predicted_plot(best_models, X, y)
     export_best_models_predictions_plot(best_models, X, y, X_names, y_name)
 

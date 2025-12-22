@@ -78,11 +78,11 @@ class FeatureManager:
         X_names = pf.get_feature_names_out(self.base_feature_names)
         return X, X_names
 
-    def generate_output(
-        self,
-        df: DataFrame,
-    ) -> np.ndarray:
+    def generate_output(self, df: DataFrame) -> np.ndarray:
         """
         Generate output from a DataFrame and an output expression.
+
         """
-        return self._evaluate_expression_or_column(df, self.output), self.output_name
+        y = self._evaluate_expression_or_column(df, self.output)
+        y_name = self.output_name
+        return y, y_name
