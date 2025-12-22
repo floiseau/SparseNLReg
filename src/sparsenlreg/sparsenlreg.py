@@ -3,36 +3,11 @@ import argparse
 import pandas as pd
 import numpy as np
 from sklearn import linear_model
-from sklearn.preprocessing import PolynomialFeatures
 from sklearn.metrics import r2_score, PredictionErrorDisplay
 import matplotlib.pyplot as plt
 
 from sparsenlreg.configuration import parse_config_file
 from sparsenlreg.feature_manager import FeatureManager
-
-
-def transform_base_features_to_polynomial_features(
-    X_base_feat,
-    X_base_feat_names,
-    degree=10,
-):
-    """
-    Convert an array of base features into an array of polynomial features.
-
-    Parameters:
-    - X_base_feat: array-like, input features
-    - X_base_feat_names: array-like, names of input features
-    - degree: int, degree of polynomial features (default: 10)
-
-    Returns:
-    - X: ndarray, matrix of polynomial features
-    - X_names: list, names of the polynomial features
-    """
-    # Generate polynomial features
-    pf = PolynomialFeatures(degree=degree, include_bias=False)
-    X = pf.fit_transform(X_base_feat)
-    X_names = pf.get_feature_names_out(X_base_feat_names)
-    return X, X_names
 
 
 def perform_fit_for_varying_beta_to_assess_tradeoff(X, y, betas, fit_intercept):
