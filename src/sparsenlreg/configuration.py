@@ -26,6 +26,7 @@ class LASSOConfig:
 
     # Model selection
     N_coeff_max: int
+    test_size: float
 
 
 def parse_config_file(file_path: str) -> LASSOConfig:
@@ -46,6 +47,7 @@ def parse_config_file(file_path: str) -> LASSOConfig:
         "log_beta_min": config["tradeoff_exploration"]["log_beta_min"],
         "log_beta_max": config["tradeoff_exploration"]["log_beta_max"],
         "N_coeff_max": config["model_selection"]["N_coeff_max"],
+        "test_size": config["model_selection"].get("test_size", 0.0),
     }
 
     return LASSOConfig(**flattened_config)

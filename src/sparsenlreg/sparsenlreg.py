@@ -1,6 +1,7 @@
 import argparse
 
 import pandas as pd
+from sklearn.model_selection import train_test_split
 
 from sparsenlreg.configuration import parse_config_file
 from sparsenlreg.feature_manager import FeatureManager
@@ -36,10 +37,21 @@ def main():
     X, X_names = feature_manager.generate_polynomial_features(df)
     y, y_name = feature_manager.generate_output(df)
 
+    # Split the dataset
+    # NOTE:
+    #   Usually, it is recommend to use a training-validation-test split.
+    #   Here, it is not requires as we have no hyperparameter to tweak.
+    if config.test_size != 0.0:
+        X_train, X_test, y_train, y_test = train_test_split(
+            X, y, test_size=config.test_size, random_state=42
+        )
+    else:
+        X_train, X_test, y_train, y_test = X, X, y, y
+
     # Train the models
     model_trainer = ModelTrainer(config)
-    models, betas = model_trainer.train(X, y)
-    r2s = model_trainer.assess_models_scores(models, X, y)
+    models, betas = model_trainer.train(X_train, y_train)
+    r2s = model_trainer.assess_models_scores(models, X_test, y_test)
     Ns_coeffs = model_trainer.count_nonzero_coefficients(models)
     best_models = model_trainer.select_best_models(models, betas, r2s, Ns_coeffs)
 
