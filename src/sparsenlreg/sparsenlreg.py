@@ -1,72 +1,12 @@
 import argparse
 
 import pandas as pd
-from sklearn.metrics import PredictionErrorDisplay
-import matplotlib.pyplot as plt
 
 from sparsenlreg.configuration import parse_config_file
 from sparsenlreg.feature_manager import FeatureManager
 from sparsenlreg.model_trainer import ModelTrainer
 from sparsenlreg.model_reporter import ModelReporter
-
-
-def export_tradeoff_plot(betas, r2s, Ns_coeff):
-    fig, ax1 = plt.subplots()
-    ax1.set_xscale("log")
-    ax1.set_xlabel("Hyper-parameter $\\beta$")
-    ax1.set_ylabel("Accuracy : Coefficient of determination $R^2$", color="tab:blue")
-    ax1.set_ylim((-0.05, 1.05))
-    ax1.scatter(betas, r2s, color="tab:blue", marker="o")
-    ax1.tick_params(axis="y", labelcolor="tab:blue")
-
-    ax2 = ax1.twinx()
-    ax2.set_ylabel("Simplicity : Number of coefficients", color="tab:red")
-    ax2.scatter(betas, Ns_coeff, color="tab:red", marker="s")
-    ax2.tick_params(axis="y", labelcolor="tab:red")
-    ax2.yaxis.get_major_locator().set_params(integer=True)
-
-    lines1, labels1 = ax1.get_legend_handles_labels()
-    lines2, labels2 = ax2.get_legend_handles_labels()
-    plt.title("Accuracy-Simplicity Tradeoff plot")
-    plt.grid(True, linestyle="--", alpha=0.6)
-    plt.tight_layout()
-    plt.savefig("tradeoff.svg")
-
-
-def export_actual_vs_predicted_plot(best_models, X, y):
-    plt.figure()
-    ax = plt.gca()
-    colors = plt.rcParams["axes.prop_cycle"].by_key()["color"]
-    for m, c in zip(best_models, colors):
-        PredictionErrorDisplay.from_estimator(
-            m["model"],
-            X,
-            y,
-            kind="actual_vs_predicted",
-            ax=ax,
-            scatter_kwargs={"color": c, "label": m["label"]},
-        )
-    plt.title("Actual vs. Predicted plot")
-    plt.legend()
-    plt.grid()
-    plt.tight_layout()
-    plt.savefig("actual_vs_predicted.svg")
-
-
-def export_best_models_predictions_plot(best_models, X, y, X_names, y_name):
-    plt.figure()
-    plt.xlabel(rf"Feature : ${X_names[1]}$")
-    plt.ylabel(rf"Output : ${y_name}$")
-    # Add the models
-    for m in best_models:
-        y_pred = m["model"].predict(X)
-        plt.plot(X[:, 1], y_pred, label=m["label"], ls="--", marker="x")
-    # Add the raw data
-    plt.scatter(X[:, 1], y, color="tab:red", marker="o", label="Data")
-    plt.grid()
-    plt.legend()
-    plt.tight_layout()
-    plt.savefig("predictions_vs_data.svg")
+from sparsenlreg.model_visualizer import ModelVisualizer
 
 
 def main():
@@ -109,9 +49,10 @@ def main():
     model_reporter.display_terminal_table(best_models, X_names, y_name)
 
     # Plots
-    export_tradeoff_plot(betas, r2s, Ns_coeffs)
-    export_actual_vs_predicted_plot(best_models, X, y)
-    export_best_models_predictions_plot(best_models, X, y, X_names, y_name)
+    visualizer = ModelVisualizer()
+    visualizer.export_all_plots(
+        best_models, X, y, X_names, y_name, betas, r2s, Ns_coeffs
+    )
 
 
 if __name__ == "__main__":
