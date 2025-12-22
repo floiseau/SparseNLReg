@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 from sparsenlreg.configuration import parse_config_file
 from sparsenlreg.feature_manager import FeatureManager
 from sparsenlreg.model_trainer import ModelTrainer
+from sparsenlreg.model_reporter import ModelReporter
 
 
 def export_tradeoff_plot(betas, r2s, Ns_coeff):
@@ -30,63 +31,6 @@ def export_tradeoff_plot(betas, r2s, Ns_coeff):
     plt.grid(True, linestyle="--", alpha=0.6)
     plt.tight_layout()
     plt.savefig("tradeoff.svg")
-
-
-def display_best_models(best_models, X_names, y_name="f(X)"):
-    for _model_data in best_models:
-        cst = _model_data["model"].intercept_
-        coeffs = _model_data["model"].coef_
-        N_coeff = _model_data["N_coeff"]
-        r2 = _model_data["r2"]
-        beta = _model_data["beta"]
-
-        print(f"=== Model {N_coeff}")
-        print("Assessment :")
-        print(f"\t- Hyperparameter beta    : {beta:1.2e}")
-        print(f"\t- Number of coefficients : {N_coeff}")
-        print(f"\t- R2 score               : {r2:.3f}")
-
-        # Print the model in LaTeX form
-        print("LaTeX expression:")
-        print(f"{y_name} =\n\t{cst:+.3g}", end="\n")
-        for i, coeff in enumerate(coeffs):
-            if not coeff == 0:
-                print(f"\t{coeff:+.3g} {X_names[i]}", end="\n")
-        print("")
-
-
-def display_latex_summary(best_models, X_names, y_name):
-    latex_table = []
-    for _model_data in best_models:
-        cst = _model_data["model"].intercept_
-        coeffs = _model_data["model"].coef_
-        N_coeff = _model_data["N_coeff"]
-        r2 = _model_data["r2"]
-        beta = _model_data["beta"]
-
-        # Build the LaTeX expression for the model
-        latex_expr = f"{y_name}(a) = {cst:+.3g}"
-        for i, coeff in enumerate(coeffs):
-            if not coeff == 0:
-                latex_expr += f" {coeff:+.3g} {X_names[i]}"
-
-        # Append the row to the table
-        latex_table.append(f"{r2:.3f} & {N_coeff} & {beta:.2g} & ${latex_expr}$ \\\\")
-
-    # Generate the LaTeX table
-    latex_output = (
-        "\\begin{tabular}{|c|c|c|l|}\n"
-        "\\hline\n"
-        "$R^2$ & $N_{\\mathrm{coeff}}$ & $\\beta$ & Model \\\\\n"
-        "\\hline\n"
-    )
-
-    latex_output += "\n".join(latex_table)
-
-    latex_output += "\\\\\n\\hline\n\\end{tabular}\n"
-
-    print("=== Summary in a LaTeX table")
-    print(latex_output)
 
 
 def export_actual_vs_predicted_plot(best_models, X, y):
@@ -159,9 +103,10 @@ def main():
     Ns_coeffs = model_trainer.count_nonzero_coefficients(models)
     best_models = model_trainer.select_best_models(models, betas, r2s, Ns_coeffs)
 
-    # Display the best models
-    display_best_models(best_models, X_names, y_name)
-    display_latex_summary(best_models, X_names, y_name)
+    # Display the model and generate a report
+    model_reporter = ModelReporter()
+    model_reporter.generate_markdown_report(best_models, X_names, y_name)
+    model_reporter.display_terminal_table(best_models, X_names, y_name)
 
     # Plots
     export_tradeoff_plot(betas, r2s, Ns_coeffs)
