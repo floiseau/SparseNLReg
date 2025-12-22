@@ -52,10 +52,10 @@ class ModelTrainer:
             best_r2 = r2s[mask][id_best]
             if best_r2 < 0:
                 continue
-            _model = np.array(models)[mask][id_best]
+            model = np.array(models)[mask][id_best]
             best_models.append(
                 {
-                    "model": _model,
+                    "model": model,
                     "r2": r2s[mask][id_best],
                     "N_coeff": N_c,
                     "beta": betas[mask][id_best],
@@ -64,8 +64,3 @@ class ModelTrainer:
             )
 
         return best_models
-
-    # # Gather the best models per number of coefficients in a dictionary
-    # best_models = gather_best_models(
-    #     models, model_trainer.betas, r2s, Ns_coeffs, config.N_coeff_max
-    # )
