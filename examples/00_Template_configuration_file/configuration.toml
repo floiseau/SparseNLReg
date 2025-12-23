@@ -1,0 +1,51 @@
+# LASSO Regression Configuration File
+# =====================================
+
+[data]
+# Path to the dataset file (CSV format)
+dataset = "path/to/your/dataset.csv"
+
+[model_features]
+# List of base features to use in the model. These can be column names or SymPy expressions.
+base_features = ["x1", "x2", "cos(x1)", "1/(x1+x2)"]
+
+# LaTeX names of the base features for display purposes
+base_feature_names = ["x_1", "x_2", "\\cos(x_1)", "\\frac{1}{x_1+x_2}"]
+
+[model_output]
+# Expression for the output variable. Can be a column name or SymPy expression.
+output = "y"
+
+# Name of the output variable for display purposes
+output_name = "y(x_1, x_2)"
+
+[polynomial]
+# Degree of polynomial features to generate
+degree = 2
+
+# Whether to fit an intercept term
+fit_intercept = true
+
+[tradeoff_exploration]
+# Number of β values to explore in the tradeoff analysis
+N_fit = 128
+
+# Minimum value of log_10(β) to explore
+log_beta_min = -4
+
+# Maximum value of log_10(β) to explore
+log_beta_max = 4
+
+[model_selection]
+# Maximum number of coefficients to consider in the list of best models
+N_coeff_max = 6
+
+# Fraction of the dataset to use as test set (0.0 for no test set)
+# Optional (0.0 by default)
+test_size = 0.2
+
+[training]
+# Whether to perform a final refit without regularization (polishing step)
+# Optional (false by default)
+polish = true
+
