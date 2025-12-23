@@ -36,19 +36,11 @@ def main():
     feature_manager = FeatureManager(config)
     X, X_names = feature_manager.generate_polynomial_features(df)
     y, y_name = feature_manager.generate_output(df)
+    X_scaled = feature_manager.scale_features(X)
 
-    # TODO: Add the normalization
-    #   1. Add the normalization parameter (None, l1, l2, max)
-    #   2. Add an if condition to check if the normalization parameter is defined
-    #   3. Add the following code
     #   4. Rescale the parameters with the features
     #       -> https://stackoverflow.com/questions/64668082/how-linear-regression-coefficients-are-stored-in-sklearn-pipelines/64671638#64671638
     #   5. Put everything in the FeatureManager ?
-
-    # # Normalize the features
-    # from sklearn.preprocessing import normalize
-    # norm = "l2"  # or "l1" or "max"
-    # X, X_norms = normalize(X, norm="l2")
 
     # Split the dataset
     # NOTE:
@@ -56,10 +48,10 @@ def main():
     #   Here, it is not requires as we have no hyperparameter to tweak.
     if config.test_size != 0.0:
         X_train, X_test, y_train, y_test = train_test_split(
-            X, y, test_size=config.test_size, random_state=42
+            X_scaled, y, test_size=config.test_size, random_state=42
         )
     else:
-        X_train, X_test, y_train, y_test = X, X, y, y
+        X_train, X_test, y_train, y_test = X_scaled, X_scaled, y, y
 
     # Train the models
     model_trainer = ModelTrainer(config)
@@ -73,6 +65,9 @@ def main():
         best_models = model_trainer.refit_best_models_without_regularization(
             best_models, X_train, y_train
         )
+
+    # Rescale the best models for plotting
+    best_models = feature_manager.rescale_best_models(best_models)
 
     # Display the model and generate a report
     model_reporter = ModelReporter()

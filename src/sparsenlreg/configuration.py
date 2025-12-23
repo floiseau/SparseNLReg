@@ -10,6 +10,7 @@ class LASSOConfig:
     # Model features
     base_features: list
     base_feature_names: list
+    scaler: str
 
     # Model output
     output: str
@@ -39,18 +40,26 @@ def parse_config_file(file_path: str) -> LASSOConfig:
 
     # Flatten the nested dictionary structure
     flattened_config = {
+        # Dataset
         "dataset": config["data"]["dataset"],
+        # Model Features
         "base_features": config["model_features"]["base_features"],
         "base_feature_names": config["model_features"]["base_feature_names"],
+        "scaler": config["model_features"].get("scaler", ""),
+        # Model Output
         "output": config["model_output"]["output"],
         "output_name": config["model_output"]["output_name"],
+        # Polynomial
         "degree": config["polynomial"]["degree"],
         "fit_intercept": config["polynomial"]["fit_intercept"],
+        # Tradeoff exploration
         "N_fit": config["tradeoff_exploration"]["N_fit"],
         "log_beta_min": config["tradeoff_exploration"]["log_beta_min"],
         "log_beta_max": config["tradeoff_exploration"]["log_beta_max"],
+        # Model selection
         "N_coeff_max": config["model_selection"]["N_coeff_max"],
         "test_size": config["model_selection"].get("test_size", 0.0),
+        # Training
         "polish": config.get("training", {}).get("polish", False),
     }
 

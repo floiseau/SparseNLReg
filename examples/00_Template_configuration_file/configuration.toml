@@ -12,6 +12,10 @@ base_features = ["x1", "x2", "cos(x1)", "1/(x1+x2)"]
 # LaTeX names of the base features for display purposes
 base_feature_names = ["x_1", "x_2", "\\cos(x_1)", "\\frac{1}{x_1+x_2}"]
 
+# Scaler to use ("", "MaxAbsScaler", "StandardScaler")
+# Optional : no scaling by default.
+scaler = 
+
 [model_output]
 # Expression for the output variable. Can be a column name or SymPy expression.
 output = "y"
@@ -41,11 +45,11 @@ log_beta_max = 4
 N_coeff_max = 6
 
 # Fraction of the dataset to use as test set (0.0 for no test set)
-# Optional (0.0 by default)
+# Optional :  0.0 by default
 test_size = 0.2
 
 [training]
 # Whether to perform a final refit without regularization (polishing step)
-# Optional (false by default)
+# Optional : false by default
 polish = true
 

@@ -3,7 +3,7 @@ from typing import List, Union
 from pandas import DataFrame
 import sympy as sp
 import numpy as np
-from sklearn.preprocessing import PolynomialFeatures
+from sklearn.preprocessing import PolynomialFeatures, MaxAbsScaler, StandardScaler
 
 from sparsenlreg.configuration import LASSOConfig
 
@@ -13,6 +13,7 @@ class FeatureManager:
         # Input
         self.base_features = config.base_features
         self.base_feature_names = config.base_feature_names
+        self.scaler_name = config.scaler
         # Output
         self.output = config.output
         self.output_name = config.output_name
@@ -46,7 +47,9 @@ class FeatureManager:
         return results if is_list else results[0]
 
     def generate_polynomial_features(self, df: DataFrame):
+        # Generate the base features
         X_base_feat = self._generate_base_features(df)
+        # Generate the polynomial features
         X, X_names = self._transform_base_features_to_polynomial_features(
             X_base_feat, self.degree
         )
@@ -77,6 +80,44 @@ class FeatureManager:
         X = pf.fit_transform(X_base_feat)
         X_names = pf.get_feature_names_out(self.base_feature_names)
         return X, X_names
+
+    def scale_features(self, X: np.array):
+        # Select the scaling method
+        match self.scaler_name.lower():
+            case "":
+                # No scaling
+                self.scaler = None
+            case "maxabsscaler":
+                self.scaler = MaxAbsScaler()
+            case "standardscaler":
+                self.scaler = StandardScaler(with_mean=False)
+            case _:
+                raise ValueError(f"Unknown scaler {self.scaler_name.lower()}.")
+        # Scale the data
+        if self.scaler:
+            return self.scaler.fit_transform(X)
+        else:
+            return X
+
+    def rescale_best_models(self, best_models):
+        """Rescale the coefficients of the best models."""
+        for model_dict in best_models:
+            model_dict["model"] = self.rescale_model(model_dict["model"])
+        return best_models
+
+    def rescale_model(self, model):
+        """Rescale the coefficients of a single model."""
+        # Extract the coefficients
+        coeff = np.array([model.coef_])
+        # Update the coefficients
+        if self.scaler:
+            new_coeff = self.scaler.transform(coeff)
+        else:
+            new_coeff = coeff
+        # Update the model
+        model.coef_ = new_coeff[0]
+        # Return the model
+        return model
 
     def generate_output(self, df: DataFrame) -> np.ndarray:
         """
