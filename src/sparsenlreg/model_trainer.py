@@ -33,8 +33,11 @@ class ModelTrainer:
             models[i] = model
         return models, betas
 
+    def assess_model_score(self, model, X, y):
+        return r2_score(y, model.predict(X))
+
     def assess_models_scores(self, models, X, y):
-        return np.array([r2_score(y, m.predict(X)) for m in models])
+        return np.array([self.assess_model_score(m, X, y) for m in models])
 
     def count_nonzero_coefficients(self, models):
         return np.array(
@@ -64,3 +67,60 @@ class ModelTrainer:
             )
 
         return best_models
+
+    def refit_best_models_without_regularization(self, best_models, X, y):
+        # Copy the best models list
+        model_dicts = best_models.copy()
+        # Iterate through the models
+        for model_dict in model_dicts:
+            # Extract the model
+            model = model_dict["model"]
+            # Refit the model
+            model_dict["model"] = self.refit_model_without_regularization(model, X, y)
+            # Update the r2 score
+            model_dict["r2_score"] = self.assess_model_score(model, X, y)
+        # Return the best models
+        return model_dicts
+
+    def refit_model_without_regularization(self, model, X, y):
+        """
+        Refits the model using only the nonzero coefficients from the LASSO model,
+        without L1-regularization.
+
+        This function takes a fitted LASSO model, identifies the nonzero coefficients,
+        and refits a linear model without regularization using only those features.
+        The refitted coefficients are then stored back in the original LASSO model object.
+
+        Args:
+            model: Fitted LASSO model.
+            X: Input features.
+            y: Target values.
+
+        Returns:
+            model: The original LASSO model object with coefficients refitted
+                   without regularization. The model's coef_ and intercept_
+                   attributes are updated.
+        """
+        # Get the indices of the nonzero coefficients
+        nonzero_indices = np.nonzero(model.coef_)[0]
+
+        if len(nonzero_indices) == 0:
+            raise ValueError("No nonzero coefficients found in the model.")
+
+        # Select the features corresponding to nonzero coefficients
+        X_selected = X[:, nonzero_indices]
+
+        # Refitting without regularization (using Ordinary Least Squares)
+        refitted_linear_model = linear_model.LinearRegression(
+            fit_intercept=model.fit_intercept
+        )
+        refitted_linear_model.fit(X_selected, y)
+
+        # Update the coefficients of the original model
+        model.coef_[:] = 0
+        model.coef_[nonzero_indices] = refitted_linear_model.coef_
+
+        if model.fit_intercept:
+            model.intercept_ = refitted_linear_model.intercept_
+
+        return model

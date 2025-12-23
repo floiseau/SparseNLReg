@@ -37,6 +37,19 @@ def main():
     X, X_names = feature_manager.generate_polynomial_features(df)
     y, y_name = feature_manager.generate_output(df)
 
+    # TODO: Add the normalization
+    #   1. Add the normalization parameter (None, l1, l2, max)
+    #   2. Add an if condition to check if the normalization parameter is defined
+    #   3. Add the following code
+    #   4. Rescale the parameters with the features
+    #       -> https://stackoverflow.com/questions/64668082/how-linear-regression-coefficients-are-stored-in-sklearn-pipelines/64671638#64671638
+    #   5. Put everything in the FeatureManager ?
+
+    # # Normalize the features
+    # from sklearn.preprocessing import normalize
+    # norm = "l2"  # or "l1" or "max"
+    # X, X_norms = normalize(X, norm="l2")
+
     # Split the dataset
     # NOTE:
     #   Usually, it is recommend to use a training-validation-test split.
@@ -54,6 +67,12 @@ def main():
     r2s = model_trainer.assess_models_scores(models, X_test, y_test)
     Ns_coeffs = model_trainer.count_nonzero_coefficients(models)
     best_models = model_trainer.select_best_models(models, betas, r2s, Ns_coeffs)
+
+    # Refit the best models without regularization
+    if config.polish:
+        best_models = model_trainer.refit_best_models_without_regularization(
+            best_models, X_train, y_train
+        )
 
     # Display the model and generate a report
     model_reporter = ModelReporter()
