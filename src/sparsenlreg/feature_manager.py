@@ -91,6 +91,10 @@ class FeatureManager:
                 self.scaler = MaxAbsScaler()
             case "standardscaler":
                 self.scaler = StandardScaler(with_mean=False)
+            case "l1normscaler":
+                self.scaler = NormScaler(norm=1)
+            case "l2normscaler":
+                self.scaler = NormScaler(norm=2)
             case _:
                 raise ValueError(f"Unknown scaler {self.scaler_name.lower()}.")
         # Scale the data
@@ -127,3 +131,21 @@ class FeatureManager:
         y = self._evaluate_expression_or_column(df, self.output)
         y_name = self.output_name
         return y, y_name
+
+
+class NormScaler:
+    def __init__(self, norm=2):
+        self.norm = norm
+
+    def fit_transform(self, X):
+        self.fit(X)
+        return self.transform(X)
+
+    def fit(self, X):
+        # Create the scaling vector
+        self.scale_ = 1 / np.linalg.norm(X, axis=0, ord=self.norm)
+
+    def transform(self, X):
+        # X_scaled = np.multiply(X, self.scale_[np.newaxis, :])
+        X_scaled = X * self.scale_
+        return X_scaled

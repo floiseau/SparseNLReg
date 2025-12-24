@@ -183,13 +183,13 @@ class ModelReporter:
             y_name: Name of the output variable.
         """
         # Define fixed column widths
-        r2_width = 5
+        r2_width = 6
         n_coeff_width = 7
         beta_width = 7
         model_width = 79 - r2_width - n_coeff_width - beta_width
 
         # Create the table header
-        header = f"{'R²':<{r2_width}} | {'N_coeff':<{n_coeff_width}} | {'β':<{beta_width}} | {'Model':<{model_width}}"
+        header = f"{'R²':^{r2_width}} | {'N_coeff':^{n_coeff_width}} | {'β':^{beta_width}} | {'Model':<{model_width}}"
         separator = f"{'-' * r2_width}-|-{'-' * n_coeff_width}-|-{'-' * beta_width}-|-{'-' * model_width}"
 
         # Create the table rows
@@ -202,7 +202,7 @@ class ModelReporter:
             beta = model_data["beta"]
 
             # Format the first line with R², N_coeff, and β
-            first_line = f"{r2:<{r2_width}.3f} | {N_coeff:<{n_coeff_width}} | {beta:<{beta_width}.2g} | {y_name} = {cst:+.3g}"
+            first_line = f"{r2:>{r2_width}.3f} | {N_coeff:^{n_coeff_width}} | {beta:^{beta_width}.2g} | {y_name} = {cst:+.3g}"
             rows.append(first_line)
 
             # Add each term of the model expression on its own line

@@ -27,7 +27,8 @@ class ModelTrainer:
                 alpha=beta,
                 fit_intercept=self.fit_intercept,
                 tol=1e-6,
-                max_iter=1_000,
+                max_iter=1_024,
+                selection="cyclic",  # cyclic or random
             )
             model.fit(X, y)
             models[i] = model
@@ -47,18 +48,14 @@ class ModelTrainer:
     def select_best_models(self, models, betas, r2s, Ns_coeffs):
         # Create a list of models
         best_models = []
-        for N_c in range(0, self.N_coeff_max + 1):
+        for N_c in range(1, self.N_coeff_max + 1):
             mask = Ns_coeffs == N_c
             if not mask.any():
                 continue
             id_best = np.argmax(r2s[mask])
-            best_r2 = r2s[mask][id_best]
-            if best_r2 < 0:
-                continue
-            model = np.array(models)[mask][id_best]
             best_models.append(
                 {
-                    "model": model,
+                    "model": np.array(models)[mask][id_best],
                     "r2": r2s[mask][id_best],
                     "N_coeff": N_c,
                     "beta": betas[mask][id_best],
