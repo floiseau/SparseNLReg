@@ -101,8 +101,9 @@ class ModelTrainer:
         # Get the indices of the nonzero coefficients
         nonzero_indices = np.nonzero(model.coef_)[0]
 
+        # If there is only the constant term (inercept_) do not refit
         if len(nonzero_indices) == 0:
-            raise ValueError("No nonzero coefficients found in the model.")
+            return model
 
         # Select the features corresponding to nonzero coefficients
         X_selected = X[:, nonzero_indices]
