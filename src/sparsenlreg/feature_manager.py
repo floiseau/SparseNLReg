@@ -17,8 +17,6 @@ class FeatureManager:
         # Output
         self.output = config.output
         self.output_name = config.output_name
-        # Polynomial
-        self.degree = config.degree
 
     def _evaluate_expression_or_column(
         self,
@@ -46,12 +44,12 @@ class FeatureManager:
 
         return results if is_list else results[0]
 
-    def generate_polynomial_features(self, df: DataFrame):
+    def generate_polynomial_features(self, df: DataFrame, degree: int):
         # Generate the base features
         X_base_feat = self._generate_base_features(df)
         # Generate the polynomial features
         X, X_names = self._transform_base_features_to_polynomial_features(
-            X_base_feat, self.degree
+            X_base_feat, degree
         )
         return X, X_names
 
@@ -105,8 +103,9 @@ class FeatureManager:
 
     def rescale_best_models(self, best_models):
         """Rescale the coefficients of the best models."""
-        for model_dict in best_models:
-            model_dict["model"] = self.rescale_model(model_dict["model"])
+        for i, model in enumerate(best_models):
+            model = self.rescale_model(model)
+            best_models[i] = model
         return best_models
 
     def rescale_model(self, model):

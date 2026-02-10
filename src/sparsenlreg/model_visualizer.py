@@ -5,8 +5,14 @@ from sklearn.metrics import PredictionErrorDisplay
 class ModelVisualizer:
     """Handles visualization and export of model plots."""
 
-    def export_tradeoff_plot(self, betas, r2s, Ns_coeff, filename="tradeoff.svg"):
+    def export_tradeoff_plot(self, models, filename="tradeoff.svg"):
         """Export the tradeoff plot between accuracy and simplicity."""
+        # Extract the plotted quanties
+        betas = [model.alpha for model in models]
+        r2s = [model.r2_score for model in models]
+        Ns_coeff = [model.N_coefs for model in models]
+
+        # Generate the plot
         fig, ax1 = plt.subplots()
         ax1.set_xscale("log")
         ax1.set_xlabel("Hyper-parameter $\\beta$")
@@ -38,12 +44,12 @@ class ModelVisualizer:
         colors = plt.rcParams["axes.prop_cycle"].by_key()["color"]
         for m, c in zip(best_models, colors):
             PredictionErrorDisplay.from_estimator(
-                m["model"],
+                m,
                 X,
                 y,
                 kind="actual_vs_predicted",
                 ax=ax,
-                scatter_kwargs={"color": c, "label": m["label"]},
+                scatter_kwargs={"color": c, "label": m.label},
             )
         plt.title("Actual vs. Predicted plot")
         plt.legend()
@@ -61,8 +67,8 @@ class ModelVisualizer:
         plt.ylabel(rf"Output : ${y_name}$")
         # Add the models
         for m in best_models:
-            y_pred = m["model"].predict(X)
-            plt.plot(X[:, 0], y_pred, label=m["label"], ls="--", marker="x")
+            y_pred = m.predict(X)
+            plt.plot(X[:, 0], y_pred, label=m.label, ls="--", marker="x")
         # Add the raw data
         plt.scatter(X[:, 0], y, color="tab:red", marker="o", label="Data")
         plt.grid()
@@ -71,10 +77,8 @@ class ModelVisualizer:
         plt.savefig(filename)
         plt.close()
 
-    def export_all_plots(
-        self, best_models, X, y, X_names, y_name, betas, r2s, Ns_coeff
-    ):
+    def export_all_plots(self, all_models, best_models, X, y, X_names, y_name):
         """Export all plots at once."""
-        self.export_tradeoff_plot(betas, r2s, Ns_coeff)
+        self.export_tradeoff_plot(all_models)
         self.export_actual_vs_predicted_plot(best_models, X, y)
         self.export_best_models_predictions_plot(best_models, X, y, X_names, y_name)

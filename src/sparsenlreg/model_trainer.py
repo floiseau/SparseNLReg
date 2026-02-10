@@ -1,6 +1,10 @@
 import numpy as np
 from sklearn import linear_model
-from sklearn.metrics import r2_score
+from sparsenlreg.model import Model
+from sklearn.model_selection import train_test_split
+
+
+from sparsenlreg.feature_manager import FeatureManager
 
 
 class ModelTrainer:
@@ -10,115 +14,61 @@ class ModelTrainer:
         self.log_beta_max = config.log_beta_max
         self.N_fit = config.N_fit
         self.fit_intercept = config.fit_intercept
+        self.test_size = config.test_size
         # Selection
         self.N_coeff_max = config.N_coeff_max
+        # Setup the feature manager
+        self.feature_manager = FeatureManager(config)
 
     def _generate_betas(self):
         return 10 ** np.linspace(self.log_beta_min, self.log_beta_max, num=self.N_fit)
 
-    def train(self, X, y):
+    def setup_training_data(self, df, degree: int):
+        # Generate the features
+        X, X_names = self.feature_manager.generate_polynomial_features(df, degree)
+        y, y_name = self.feature_manager.generate_output(df)
+        X_scaled = self.feature_manager.scale_features(X)
+
+        # Split the dataset
+        # NOTE:
+        #   Usually, it is recommend to use a training-validation-test split.
+        #   Here, it is not requires as we have no hyperparameter to tweak.
+        if self.test_size != 0.0:
+            data = train_test_split(
+                X_scaled, y, test_size=self.test_size, random_state=42
+            )
+        else:
+            data = X_scaled, X_scaled, y, y
+        X_train, X_test, y_train, y_test = data
+        return X, X_train, X_test, y, y_train, y_test, X_names, y_name
+
+    def train(self, X_train, y_train, X_test, y_test):
         # Define the values of beta
         betas = self._generate_betas()
         # Create arrays to store the results
         models = [None for _ in range(self.N_fit)]
         # Perform the sparse regression for different values of beta
         for i, beta in enumerate(betas):
-            model = linear_model.Lasso(
+            model = Model(
                 alpha=beta,
+                l1_ratio=1,
                 fit_intercept=self.fit_intercept,
                 tol=1e-6,
                 max_iter=1_024,
                 selection="cyclic",  # cyclic or random
             )
-            model.fit(X, y)
+            model.fit_and_assess(X_train, y_train, X_test, y_test)
             models[i] = model
-        return models, betas
+        return models
 
-    def assess_model_score(self, model, X, y):
-        return r2_score(y, model.predict(X))
-
-    def assess_models_scores(self, models, X, y):
-        return np.array([self.assess_model_score(m, X, y) for m in models])
-
-    def count_nonzero_coefficients(self, models):
-        return np.array(
-            [np.count_nonzero(m.coef_) + self.fit_intercept for m in models]
-        )
-
-    def select_best_models(self, models, betas, r2s, Ns_coeffs):
+    def select_best_models(self, models):
         # Create a list of models
         best_models = []
         for N_c in range(1, self.N_coeff_max + 1):
-            mask = Ns_coeffs == N_c
+            mask = np.where([m.N_coefs == N_c for m in models])[0]
             if not mask.any():
                 continue
-            id_best = np.argmax(r2s[mask])
-            best_models.append(
-                {
-                    "model": np.array(models)[mask][id_best],
-                    "r2": r2s[mask][id_best],
-                    "N_coeff": N_c,
-                    "beta": betas[mask][id_best],
-                    "label": f"Model : $N_\\mathrm{{coeff}} = {N_c}$, $R^2 = {r2s[mask][id_best]:.3f}$",
-                }
-            )
-
+            models_with_N_c_coeffs = [models[i] for i in mask]
+            id_best = np.argmax(m.r2_score for m in models_with_N_c_coeffs)
+            best_models.append(models_with_N_c_coeffs[id_best])
         return best_models
-
-    def refit_best_models_without_regularization(self, best_models, X, y):
-        # Copy the best models list
-        model_dicts = best_models.copy()
-        # Iterate through the models
-        for model_dict in model_dicts:
-            # Extract the model
-            model = model_dict["model"]
-            # Refit the model
-            model_dict["model"] = self.refit_model_without_regularization(model, X, y)
-            # Update the r2 score
-            model_dict["r2_score"] = self.assess_model_score(model, X, y)
-        # Return the best models
-        return model_dicts
-
-    def refit_model_without_regularization(self, model, X, y):
-        """
-        Refits the model using only the nonzero coefficients from the LASSO model,
-        without L1-regularization.
-
-        This function takes a fitted LASSO model, identifies the nonzero coefficients,
-        and refits a linear model without regularization using only those features.
-        The refitted coefficients are then stored back in the original LASSO model object.
-
-        Args:
-            model: Fitted LASSO model.
-            X: Input features.
-            y: Target values.
-
-        Returns:
-            model: The original LASSO model object with coefficients refitted
-                   without regularization. The model's coef_ and intercept_
-                   attributes are updated.
-        """
-        # Get the indices of the nonzero coefficients
-        nonzero_indices = np.nonzero(model.coef_)[0]
-
-        # If there is only the constant term (inercept_) do not refit
-        if len(nonzero_indices) == 0:
-            return model
-
-        # Select the features corresponding to nonzero coefficients
-        X_selected = X[:, nonzero_indices]
-
-        # Refitting without regularization (using Ordinary Least Squares)
-        refitted_linear_model = linear_model.LinearRegression(
-            fit_intercept=model.fit_intercept
-        )
-        refitted_linear_model.fit(X_selected, y)
-
-        # Update the coefficients of the original model
-        model.coef_[:] = 0
-        model.coef_[nonzero_indices] = refitted_linear_model.coef_
-
-        if model.fit_intercept:
-            model.intercept_ = refitted_linear_model.intercept_
-
-        return model
