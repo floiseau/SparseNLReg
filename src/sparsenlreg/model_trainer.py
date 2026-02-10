@@ -16,6 +16,7 @@ class ModelTrainer:
         self.test_size = config.test_size
         # Selection
         self.N_coeff_max = config.N_coeff_max
+        self.coordinate_descent_selection = config.coordinate_descent_selection
         # Setup the feature manager
         self.feature_manager = FeatureManager(config)
 
@@ -50,11 +51,11 @@ class ModelTrainer:
         for i, beta in enumerate(betas):
             model = Model(
                 alpha=beta,
-                l1_ratio=1,
+                l1_ratio=1.0,
                 fit_intercept=self.fit_intercept,
                 tol=1e-6,
-                max_iter=1_024,
-                selection="cyclic",  # cyclic or random
+                max_iter=512,
+                selection=self.coordinate_descent_selection,
             )
             model.fit_and_assess(X_train, y_train, X_test, y_test)
             models[i] = model
