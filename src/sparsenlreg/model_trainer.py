@@ -1,5 +1,4 @@
 import numpy as np
-from sklearn import linear_model
 from sparsenlreg.model import Model
 from sklearn.model_selection import train_test_split
 
