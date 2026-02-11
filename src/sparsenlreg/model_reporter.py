@@ -4,7 +4,7 @@ class ModelReporter:
     def __init__(self):
         pass
 
-    def generate_markdown_report(self, best_models, X_names, y_name):
+    def generate_markdown_report(self, best_models, X_names, y_name, model_name: str):
         """
         Generate, print, and export a Markdown summary of the best models.
 
@@ -12,7 +12,7 @@ class ModelReporter:
             best_models: List of the best models.
             X_names: List of feature names.
             y_name: Name of the output variable.
-            output_file: File to export the Markdown summary to.
+            model_name: Name of the model for file naming.
         """
         # Generate the header
         header = "# SpareNLReg report\n\n"
@@ -30,7 +30,7 @@ class ModelReporter:
         )
 
         # Export the Markdown summary to a file
-        with open("report.md", "w") as f:
+        with open(f"{model_name}_report.md", "w") as f:
             f.write(header)
             f.write(markdown_summary_table)
             f.write(latex_summary_table)

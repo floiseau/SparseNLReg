@@ -1,3 +1,4 @@
+from pathlib import Path
 import argparse
 
 import pandas as pd
@@ -21,9 +22,12 @@ def main():
         description="TODO",
         usage="sparsenlreg configuration.toml",
     )
-    parser.add_argument("config_file", type=str)
+    parser.add_argument("config_file", type=Path)
     args = parser.parse_args()
     print(f"Reading the configuration file : {args.config_file}.")
+
+    # Extract the name of the model
+    model_name = args.config_file.stem
 
     # Read the configuration file
     config = parse_config_file(args.config_file)
@@ -52,12 +56,12 @@ def main():
 
     # Display the model and generate a report
     model_reporter = ModelReporter()
-    model_reporter.generate_markdown_report(best_models, X_names, y_name)
+    model_reporter.generate_markdown_report(best_models, X_names, y_name, model_name)
     model_reporter.display_terminal_table(best_models, X_names, y_name)
 
     # Plots
     visualizer = ModelVisualizer()
-    visualizer.export_all_plots(models, best_models, X, y, X_names, y_name)
+    visualizer.export_all_plots(models, best_models, X, y, X_names, y_name, model_name)
 
 
 if __name__ == "__main__":
