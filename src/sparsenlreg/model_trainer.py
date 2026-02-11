@@ -24,7 +24,7 @@ class ModelTrainer:
         return 10 ** np.linspace(self.log_beta_min, self.log_beta_max, num=self.N_fit)
 
     def create_model(self, beta):
-        match self.solver:
+        match self.solver.lower():
             case "lars":
                 model = LarsModel(
                     alpha=beta,
