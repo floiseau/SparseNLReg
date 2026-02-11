@@ -1,48 +1,21 @@
 import numpy as np
 
-from sklearn.linear_model import ElasticNet, LinearRegression
+from sklearn.linear_model import ElasticNet, LinearRegression, LassoLars
 from sklearn.metrics import r2_score
 
+class ElasticNetModel(ElasticNet, Model):
+    ...
 
-class Model(ElasticNet):
-    def __init__(
-        self,
-        alpha=1.0,
-        l1_ratio=1.0,
-        *,
-        fit_intercept=True,
-        precompute=False,
-        copy_X=True,
-        max_iter=1000,
-        tol=1e-4,
-        warm_start=False,
-        positive=False,
-        random_state=None,
-        selection="cyclic",
-    ):
-        # Initialize the ElasticNet model
-        super().__init__(
-            alpha=alpha,
-            l1_ratio=l1_ratio,
-            fit_intercept=fit_intercept,
-            precompute=precompute,
-            copy_X=copy_X,
-            max_iter=max_iter,
-            tol=tol,
-            warm_start=warm_start,
-            positive=positive,
-            random_state=random_state,
-            selection=selection,
-        )
+
+class LarsModel(LassoLars, Model):
+    ...
+
+class Model():
 
     def fit_and_assess(self, X_train, y_train, X_test, y_test):
         self.fit(X_train, y_train)
         self.assess(X_test, y_test)
-
-    def fit(self, X_train, y_train, sample_weight=None, check_input=True):
-        # Fit the model
-        super().fit(X_train, y_train, sample_weight, check_input)
-
+        
     def assess(self, X_test, y_test):
         self.r2_score = self._calculate_r2_score(X_test, y_test)
         self.N_coefs = self._count_nonzero_coefficients()

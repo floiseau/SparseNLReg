@@ -1,7 +1,6 @@
 import numpy as np
-from sparsenlreg.model import Model
+from sparsenlreg.model import LarsModel, ElasticNetModel
 from sklearn.model_selection import train_test_split
-
 
 from sparsenlreg.feature_manager import FeatureManager
 
@@ -49,14 +48,19 @@ class ModelTrainer:
         models = [None for _ in range(self.N_fit)]
         # Perform the sparse regression for different values of beta
         for i, beta in enumerate(betas):
-            model = Model(
+            model = LarsModel(
                 alpha=beta,
-                l1_ratio=1.0,
                 fit_intercept=self.fit_intercept,
-                tol=1e-6,
-                max_iter=512,
-                selection=self.coordinate_descent_selection,
+                max_iter=512
             )
+            # model = ElasticNetModel(
+            #     alpha=beta,
+            #     l1_ratio=1.0,
+            #     fit_intercept=self.fit_intercept,
+            #     tol=1e-6,
+            #     max_iter=512,
+            #     selection=self.coordinate_descent_selection,
+            # )
             model.fit_and_assess(X_train, y_train, X_test, y_test)
             models[i] = model
         return models
