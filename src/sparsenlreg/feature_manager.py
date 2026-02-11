@@ -13,7 +13,7 @@ class FeatureManager:
         # Input
         self.base_features = config.base_features
         self.base_feature_names = config.base_feature_names
-        self.scaler_name = config.scaler
+        self.scaler_name = config.feature_scaler
         # Output
         self.output = config.output
         self.output_name = config.output_name
@@ -84,20 +84,20 @@ class FeatureManager:
         match self.scaler_name.lower():
             case "":
                 # No scaling
-                self.scaler = None
+                self.feature_scaler = None
             case "maxabsscaler":
-                self.scaler = MaxAbsScaler()
+                self.feature_scaler = MaxAbsScaler()
             case "standardscaler":
-                self.scaler = StandardScaler(with_mean=False)
+                self.feature_scaler = StandardScaler(with_mean=False)
             case "l1normscaler":
-                self.scaler = NormScaler(norm=1)
+                self.feature_scaler = NormScaler(norm=1)
             case "l2normscaler":
-                self.scaler = NormScaler(norm=2)
+                self.feature_scaler = NormScaler(norm=2)
             case _:
                 raise ValueError(f"Unknown scaler {self.scaler_name.lower()}.")
         # Scale the data
-        if self.scaler:
-            return self.scaler.fit_transform(X)
+        if self.feature_scaler:
+            return self.feature_scaler.fit_transform(X)
         else:
             return X
 
@@ -113,8 +113,8 @@ class FeatureManager:
         # Extract the coefficients
         coeff = np.array([model.coef_])
         # Update the coefficients
-        if self.scaler:
-            new_coeff = self.scaler.transform(coeff)
+        if self.feature_scaler:
+            new_coeff = self.feature_scaler.transform(coeff)
         else:
             new_coeff = coeff
         # Update the model

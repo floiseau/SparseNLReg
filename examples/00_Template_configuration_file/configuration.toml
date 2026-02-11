@@ -12,9 +12,9 @@ base_features = ["x1", "x2", "cos(x1)", "1/(x1+x2)"]
 # LaTeX names of the base features for display purposes
 base_feature_names = ["x_1", "x_2", "\\cos(x_1)", "\\frac{1}{x_1+x_2}"]
 
-# Scaler to use ("", "MaxAbsScaler", "StandardScaler")
+# Scaler to use ("", "MaxAbsScaler", "StandardScaler", "L1NormScaler", "L2NormScaler")
 # Optional : no scaling by default.
-scaler = 
+feature_scaler = ""
 
 [model_output]
 # Expression for the output variable. Can be a column name or SymPy expression.
@@ -39,6 +39,11 @@ log_beta_min = -4
 
 # Maximum value of log_10(β) to explore
 log_beta_max = 4
+
+# Selection of coefficient to optimize in coordinate descent
+# Optional : "cyclic" by default.
+# See "selection" parameter : https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.Lasso.html
+coordinate_descent_selection = "cyclic"
 
 [model_selection]
 # Maximum number of coefficients to consider in the list of best models

@@ -4,6 +4,7 @@ dataset = "data_ct_specimen.csv"
 [model_features]
 base_features = ["a", "exp(a)", "1/sqrt(1-a)"]
 base_feature_names = ["a/b", "\\exp(a/b)", "\\frac{1}{\\sqrt{1-a/b}}"]
+feature_scaler = "MaxAbsScaler"
 
 [model_output]
 output = "KI_adim"
@@ -21,3 +22,6 @@ log_beta_max = 4
 [model_selection]
 N_coeff_max = 4
 test_size = 0.5
+
+[training]
+polish = true
