@@ -40,6 +40,10 @@ log_beta_min = -4
 # Maximum value of log_10(β) to explore
 log_beta_max = 4
 
+# Selection of the LASSO solver
+# Optional : "lars" by default.
+solver = "lars"
+
 # Selection of coefficient to optimize in coordinate descent
 # Optional : "cyclic" by default.
 # See "selection" parameter : https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.Lasso.html

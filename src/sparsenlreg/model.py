@@ -3,13 +3,6 @@ import numpy as np
 from sklearn.linear_model import ElasticNet, LinearRegression, LassoLars
 from sklearn.metrics import r2_score
 
-class ElasticNetModel(ElasticNet, Model):
-    ...
-
-
-class LarsModel(LassoLars, Model):
-    ...
-
 class Model():
 
     def fit_and_assess(self, X_train, y_train, X_test, y_test):
@@ -68,3 +61,11 @@ class Model():
 
         # Re-assess the model
         self.assess(X_test, y_test)
+
+
+class ElasticNetModel(ElasticNet, Model):
+    ...
+
+
+class LarsModel(LassoLars, Model):
+    ...

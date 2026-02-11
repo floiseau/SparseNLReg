@@ -13,6 +13,7 @@ class ModelTrainer:
         self.N_fit = config.N_fit
         self.fit_intercept = config.fit_intercept
         self.test_size = config.test_size
+        self.solver = config.solver
         # Selection
         self.N_coeff_max = config.N_coeff_max
         self.coordinate_descent_selection = config.coordinate_descent_selection
@@ -21,6 +22,28 @@ class ModelTrainer:
 
     def _generate_betas(self):
         return 10 ** np.linspace(self.log_beta_min, self.log_beta_max, num=self.N_fit)
+
+    def create_model(self, beta):
+        match self.solver:
+            case "lars":
+                model = LarsModel(
+                    alpha=beta,
+                    fit_intercept=self.fit_intercept,
+                    max_iter=512
+                )
+            case "coordinate_descent":
+                model = ElasticNetModel(
+                    alpha=beta,
+                    l1_ratio=1.0,
+                    fit_intercept=self.fit_intercept,
+                    tol=1e-6,
+                    max_iter=512,
+                    selection=self.coordinate_descent_selection,
+                )
+            case _:
+                ValueError(f"The solver {self.solver} is invalid! Value choices are 'lars' or 'coordinate_descent'.")
+
+        return model
 
     def setup_training_data(self, df, degree: int):
         # Generate the features
@@ -48,19 +71,7 @@ class ModelTrainer:
         models = [None for _ in range(self.N_fit)]
         # Perform the sparse regression for different values of beta
         for i, beta in enumerate(betas):
-            model = LarsModel(
-                alpha=beta,
-                fit_intercept=self.fit_intercept,
-                max_iter=512
-            )
-            # model = ElasticNetModel(
-            #     alpha=beta,
-            #     l1_ratio=1.0,
-            #     fit_intercept=self.fit_intercept,
-            #     tol=1e-6,
-            #     max_iter=512,
-            #     selection=self.coordinate_descent_selection,
-            # )
+            model = self.create_model(beta)
             model.fit_and_assess(X_train, y_train, X_test, y_test)
             models[i] = model
         return models

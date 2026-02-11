@@ -24,6 +24,7 @@ class LASSOConfig:
     N_fit: int
     log_beta_min: float
     log_beta_max: float
+    solver: str
     coordinate_descent_selection: str
 
     # Model selection
@@ -57,6 +58,7 @@ def parse_config_file(file_path: str) -> LASSOConfig:
         "N_fit": config["tradeoff_exploration"]["N_fit"],
         "log_beta_min": config["tradeoff_exploration"]["log_beta_min"],
         "log_beta_max": config["tradeoff_exploration"]["log_beta_max"],
+        "solver": config["tradeoff_exploration"].get("solver", "lars"),
         "coordinate_descent_selection": config["tradeoff_exploration"].get(
             "coordinate_descent_selection", "cyclic"
         ),
