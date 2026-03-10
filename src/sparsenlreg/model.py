@@ -3,12 +3,12 @@ import numpy as np
 from sklearn.linear_model import ElasticNet, LinearRegression, LassoLars
 from sklearn.metrics import r2_score
 
-class Model():
 
+class Model:
     def fit_and_assess(self, X_train, y_train, X_test, y_test):
         self.fit(X_train, y_train)
         self.assess(X_test, y_test)
-        
+
     def assess(self, X_test, y_test):
         self.r2_score = self._calculate_r2_score(X_test, y_test)
         self.N_coefs = self._count_nonzero_coefficients()
@@ -18,7 +18,8 @@ class Model():
         return r2_score(y_test, self.predict(X_test))
 
     def _count_nonzero_coefficients(self):
-        return np.count_nonzero(self.coef_) + self.fit_intercept
+        N_intercept = 1
+        return np.count_nonzero(self.coef_) + N_intercept
 
     def refit_model_without_regularization(self, X_train, y_train, X_test, y_test):
         """
@@ -63,9 +64,7 @@ class Model():
         self.assess(X_test, y_test)
 
 
-class ElasticNetModel(ElasticNet, Model):
-    ...
+class ElasticNetModel(ElasticNet, Model): ...
 
 
-class LarsModel(LassoLars, Model):
-    ...
+class LarsModel(LassoLars, Model): ...

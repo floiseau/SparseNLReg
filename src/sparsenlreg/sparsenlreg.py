@@ -43,13 +43,13 @@ def main():
     )
     models = model_trainer.train(X_train, y_train, X_test, y_test)
 
+    # Refit the models without regularization
+    if config.polish:
+        for model in models:
+            model.refit_model_without_regularization(X_train, y_train, X_test, y_test)
+
     # Select the best models
     best_models = model_trainer.select_best_models(models)
-
-    # Refit the best models without regularization
-    if config.polish:
-        for model in best_models:
-            model.refit_model_without_regularization(X_train, y_train, X_test, y_test)
 
     # Rescale the best models for plotting
     best_models = model_trainer.feature_manager.rescale_best_models(best_models)

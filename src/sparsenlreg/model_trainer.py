@@ -27,9 +27,7 @@ class ModelTrainer:
         match self.solver.lower():
             case "lars":
                 model = LarsModel(
-                    alpha=beta,
-                    fit_intercept=self.fit_intercept,
-                    max_iter=512
+                    alpha=beta, fit_intercept=self.fit_intercept, max_iter=512
                 )
             case "coordinate_descent":
                 model = ElasticNetModel(
@@ -41,7 +39,9 @@ class ModelTrainer:
                     selection=self.coordinate_descent_selection,
                 )
             case _:
-                ValueError(f"The solver {self.solver} is invalid! Value choices are 'lars' or 'coordinate_descent'.")
+                ValueError(
+                    f"The solver {self.solver} is invalid! Value choices are 'lars' or 'coordinate_descent'."
+                )
 
         return model
 
@@ -50,6 +50,7 @@ class ModelTrainer:
         X, X_names = self.feature_manager.generate_polynomial_features(df, degree)
         y, y_name = self.feature_manager.generate_output(df)
         X_scaled = self.feature_manager.scale_features(X)
+        y_scaled = self.feature_manager.scale_output(y)
 
         # Split the dataset
         # NOTE:
@@ -57,10 +58,10 @@ class ModelTrainer:
         #   Here, it is not requires as we have no hyperparameter to tweak.
         if self.test_size != 0.0:
             data = train_test_split(
-                X_scaled, y, test_size=self.test_size, random_state=42
+                X_scaled, y_scaled, test_size=self.test_size, random_state=42
             )
         else:
-            data = X_scaled, X_scaled, y, y
+            data = X_scaled, X_scaled, y_scaled, y_scaled
         X_train, X_test, y_train, y_test = data
         return X, X_train, X_test, y, y_train, y_test, X_names, y_name
 

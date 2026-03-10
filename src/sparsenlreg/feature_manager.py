@@ -88,7 +88,7 @@ class FeatureManager:
             case "maxabsscaler":
                 self.feature_scaler = MaxAbsScaler()
             case "standardscaler":
-                self.feature_scaler = StandardScaler(with_mean=False)
+                self.feature_scaler = StandardScaler(with_mean=True)
             case "l1normscaler":
                 self.feature_scaler = NormScaler(norm=1)
             case "l2normscaler":
@@ -101,6 +101,29 @@ class FeatureManager:
         else:
             return X
 
+    def scale_output(self, y: np.array):
+        # Select the scaling method
+        match self.scaler_name.lower():
+            case "":
+                # No scaling
+                self.output_scaler = None
+            case "maxabsscaler":
+                self.output_scaler = MaxAbsScaler()
+            case "standardscaler":
+                self.output_scaler = StandardScaler(with_mean=True)
+            case "l1normscaler":
+                self.output_scaler = NormScaler(norm=1)
+            case "l2normscaler":
+                self.output_scaler = NormScaler(norm=2)
+            case _:
+                raise ValueError(f"Unknown scaler {self.scaler_name.lower()}.")
+        # Scale the data
+        if self.output_scaler:
+            y_scaled = self.output_scaler.fit_transform(y.reshape(-1, 1))
+            return y_scaled.reshape((-1,))
+        else:
+            return y
+
     def rescale_best_models(self, best_models):
         """Rescale the coefficients of the best models."""
         for i, model in enumerate(best_models):
@@ -111,14 +134,22 @@ class FeatureManager:
     def rescale_model(self, model):
         """Rescale the coefficients of a single model."""
         # Extract the coefficients
-        coeff = np.array([model.coef_])
+        coeff = np.array(model.coef_)
+        intercept = model.intercept_
         # Update the coefficients
         if self.feature_scaler:
-            new_coeff = self.feature_scaler.transform(coeff)
-        else:
-            new_coeff = coeff
-        # Update the model
-        model.coef_ = new_coeff[0]
+            # Get the parameters of the feature scaler
+            a = self.feature_scaler.scale_.T
+            b = self.feature_scaler.mean_
+            # Get the parameters of the output scaler
+            A = self.output_scaler.scale_[0]
+            B = self.output_scaler.mean_[0]
+            # Compute the new coefficients
+            new_coeff = A * coeff / a
+            new_intercept = -A * np.dot(coeff, b / a) + A * intercept + B
+            # Update the model
+            model.coef_ = new_coeff
+            model.intercept_ = new_intercept
         # Return the model
         return model
 
