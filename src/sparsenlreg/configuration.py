@@ -10,7 +10,6 @@ class LASSOConfig:
     # Model features
     base_features: list
     base_feature_names: list
-    feature_scaler: str
 
     # Model output
     output: str
@@ -47,7 +46,6 @@ def parse_config_file(file_path: str) -> LASSOConfig:
         # Model Features
         "base_features": config["model_features"]["base_features"],
         "base_feature_names": config["model_features"]["base_feature_names"],
-        "feature_scaler": config["model_features"].get("feature_scaler", ""),
         # Model Output
         "output": config["model_output"]["output"],
         "output_name": config["model_output"]["output_name"],

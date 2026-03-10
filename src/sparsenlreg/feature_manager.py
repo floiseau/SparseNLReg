@@ -3,7 +3,7 @@ from typing import List, Union
 from pandas import DataFrame
 import sympy as sp
 import numpy as np
-from sklearn.preprocessing import PolynomialFeatures, MaxAbsScaler, StandardScaler
+from sklearn.preprocessing import PolynomialFeatures, StandardScaler
 
 from sparsenlreg.configuration import LASSOConfig
 
@@ -13,7 +13,6 @@ class FeatureManager:
         # Input
         self.base_features = config.base_features
         self.base_feature_names = config.base_feature_names
-        self.scaler_name = config.feature_scaler
         # Output
         self.output = config.output
         self.output_name = config.output_name
@@ -80,49 +79,13 @@ class FeatureManager:
         return X, X_names
 
     def scale_features(self, X: np.array):
-        # Select the scaling method
-        match self.scaler_name.lower():
-            case "":
-                # No scaling
-                self.feature_scaler = None
-            case "maxabsscaler":
-                self.feature_scaler = MaxAbsScaler()
-            case "standardscaler":
-                self.feature_scaler = StandardScaler(with_mean=True)
-            case "l1normscaler":
-                self.feature_scaler = NormScaler(norm=1)
-            case "l2normscaler":
-                self.feature_scaler = NormScaler(norm=2)
-            case _:
-                raise ValueError(f"Unknown scaler {self.scaler_name.lower()}.")
-        # Scale the data
-        if self.feature_scaler:
-            return self.feature_scaler.fit_transform(X)
-        else:
-            return X
+        self.feature_scaler = StandardScaler(with_mean=True)
+        return self.feature_scaler.fit_transform(X)
 
-    def scale_output(self, y: np.array):
-        # Select the scaling method
-        match self.scaler_name.lower():
-            case "":
-                # No scaling
-                self.output_scaler = None
-            case "maxabsscaler":
-                self.output_scaler = MaxAbsScaler()
-            case "standardscaler":
-                self.output_scaler = StandardScaler(with_mean=True)
-            case "l1normscaler":
-                self.output_scaler = NormScaler(norm=1)
-            case "l2normscaler":
-                self.output_scaler = NormScaler(norm=2)
-            case _:
-                raise ValueError(f"Unknown scaler {self.scaler_name.lower()}.")
-        # Scale the data
-        if self.output_scaler:
-            y_scaled = self.output_scaler.fit_transform(y.reshape(-1, 1))
-            return y_scaled.reshape((-1,))
-        else:
-            return y
+    def scale_outputs(self, y: np.array):
+        self.output_scaler = StandardScaler(with_mean=True)
+        y_scaled = self.output_scaler.fit_transform(y.reshape(-1, 1))
+        return y_scaled.reshape((-1,))
 
     def rescale_best_models(self, best_models):
         """Rescale the coefficients of the best models."""
@@ -136,20 +99,18 @@ class FeatureManager:
         # Extract the coefficients
         coeff = np.array(model.coef_)
         intercept = model.intercept_
-        # Update the coefficients
-        if self.feature_scaler:
-            # Get the parameters of the feature scaler
-            a = self.feature_scaler.scale_.T
-            b = self.feature_scaler.mean_
-            # Get the parameters of the output scaler
-            A = self.output_scaler.scale_[0]
-            B = self.output_scaler.mean_[0]
-            # Compute the new coefficients
-            new_coeff = A * coeff / a
-            new_intercept = -A * np.dot(coeff, b / a) + A * intercept + B
-            # Update the model
-            model.coef_ = new_coeff
-            model.intercept_ = new_intercept
+        # Get the parameters of the feature scaler
+        a = self.feature_scaler.scale_.T
+        b = self.feature_scaler.mean_
+        # Get the parameters of the output scaler
+        A = self.output_scaler.scale_[0]
+        B = self.output_scaler.mean_[0]
+        # Update the coefficients and intercept
+        new_coeff = A * coeff / a
+        new_intercept = -A * np.dot(coeff, b / a) + A * intercept + B
+        # Update the model
+        model.coef_ = new_coeff
+        model.intercept_ = new_intercept
         # Return the model
         return model
 
@@ -161,21 +122,3 @@ class FeatureManager:
         y = self._evaluate_expression_or_column(df, self.output)
         y_name = self.output_name
         return y, y_name
-
-
-class NormScaler:
-    def __init__(self, norm=2):
-        self.norm = norm
-
-    def fit_transform(self, X):
-        self.fit(X)
-        return self.transform(X)
-
-    def fit(self, X):
-        # Create the scaling vector
-        self.scale_ = 1 / np.linalg.norm(X, axis=0, ord=self.norm)
-
-    def transform(self, X):
-        # X_scaled = np.multiply(X, self.scale_[np.newaxis, :])
-        X_scaled = X * self.scale_
-        return X_scaled

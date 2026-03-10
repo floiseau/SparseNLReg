@@ -12,10 +12,6 @@ base_features = ["x1", "x2", "cos(x1)", "1/(x1+x2)"]
 # LaTeX names of the base features for display purposes
 base_feature_names = ["x_1", "x_2", "\\cos(x_1)", "\\frac{1}{x_1+x_2}"]
 
-# Scaler to use ("", "MaxAbsScaler", "StandardScaler", "L1NormScaler", "L2NormScaler")
-# Optional : no scaling by default.
-feature_scaler = ""
-
 [model_output]
 # Expression for the output variable. Can be a column name or SymPy expression.
 output = "y"
@@ -40,7 +36,7 @@ log_beta_min = -4
 # Maximum value of log_10(β) to explore
 log_beta_max = 4
 
-# Selection of the LASSO solver
+# Selection of the LASSO solver ("lars" or "coordinate_descent")
 # Optional : "lars" by default.
 solver = "lars"
 
