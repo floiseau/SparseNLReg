@@ -72,7 +72,7 @@ class ModelReporter:
 
             # Assessment
             markdown_lines.append("\n**Assessment:**\n")
-            markdown_lines.append(f"- Hyperparameter $\\beta {beta:1.2e}$")
+            markdown_lines.append(f"- Hyperparameter $\\beta = {beta:1.2e}$")
             markdown_lines.append(f"- Number of coefficients: `{N_coefs}`")
             markdown_lines.append(f"- Score: $R^2 = {r2:.3f}$")
             markdown_lines.append("")
@@ -83,6 +83,21 @@ class ModelReporter:
             for i, coeff in enumerate(coeffs):
                 if not coeff == 0:
                     markdown_lines.append(f"    {coeff:+.3g} {X_names[i]}")
+            markdown_lines.append("```")
+
+            # Python function (raw code block)
+            markdown_lines.append("\n**Python function:**")
+            markdown_lines.append("```python")
+            markdown_lines.append(f"\ndef {y_name}(TODO):")
+            markdown_lines.append("    return (")
+            markdown_lines.append(f"        {cst:+.3g}")
+            for i, coeff in enumerate(coeffs):
+                if not coeff == 0:
+                    X_name = X_names[i].replace(" ", "*")
+                    markdown_lines.append(
+                        f"        {coeff}*{X_name}".replace("^", "**")
+                    )
+            markdown_lines.append("    )")
             markdown_lines.append("```")
 
             # Separator

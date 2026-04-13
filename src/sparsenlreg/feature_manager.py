@@ -82,7 +82,7 @@ class FeatureManager:
         self.feature_scaler = StandardScaler(with_mean=True)
         return self.feature_scaler.fit_transform(X)
 
-    def scale_outputs(self, y: np.array):
+    def scale_output(self, y: np.array):
         self.output_scaler = StandardScaler(with_mean=True)
         y_scaled = self.output_scaler.fit_transform(y.reshape(-1, 1))
         return y_scaled.reshape((-1,))
