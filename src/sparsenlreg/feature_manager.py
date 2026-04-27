@@ -41,7 +41,7 @@ class FeatureManager:
                 f_args = (df[name] for name in symbol_names)
                 results.append(f(*f_args))
 
-        return results if is_list else results[0]
+        return np.array(results) if is_list else np.array(results[0])
 
     def generate_polynomial_features(self, df: DataFrame, degree: int):
         # Generate the base features
