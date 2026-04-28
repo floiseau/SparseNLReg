@@ -1,4 +1,5 @@
 from pathlib import Path
+from datetime import datetime
 import argparse
 
 import pandas as pd
@@ -26,8 +27,13 @@ def main():
     args = parser.parse_args()
     print(f"Reading the configuration file : {args.config_file}.")
 
-    # Extract the name of the model
+    # Create a export directory
     model_name = args.config_file.stem
+    date = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    export_dir = Path(f"{model_name}_{date}")
+    export_dir.mkdir()
+    # Copy the configuration file into the export directory
+    args.config_file.copy(export_dir / args.config_file.name)
 
     # Read the configuration file
     config = parse_config_file(args.config_file)
@@ -56,7 +62,7 @@ def main():
 
     # Display the model and generate a report
     model_reporter = ModelReporter()
-    model_reporter.generate_markdown_report(best_models, X_names, y_name, model_name)
+    model_reporter.generate_markdown_report(best_models, X_names, y_name, export_dir)
     model_reporter.display_terminal_table(best_models, X_names, y_name)
 
     # Export the plots
@@ -64,11 +70,11 @@ def main():
     if config.export_plots:
         visualizer = ModelVisualizer()
         visualizer.export_all_plots(
-            models, best_models, X, y, X_names, y_name, model_name
+            models, best_models, X, y, X_names, y_name, export_dir
         )
     # Export the data
     if config.export_tradeoff_data:
-        visualizer.export_tradeoff_data(models, model_name)
+        visualizer.export_tradeoff_data(models, export_dir)
 
 
 if __name__ == "__main__":

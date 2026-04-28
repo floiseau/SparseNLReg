@@ -6,7 +6,7 @@ from sklearn.metrics import PredictionErrorDisplay
 class ModelVisualizer:
     """Handles visualization and export of model plots."""
 
-    def export_tradeoff_data(self, models, model_name: str):
+    def export_tradeoff_data(self, models, export_dir):
         # Initialize a dataframe
         df = pd.DataFrame()
         # Gather the data
@@ -14,20 +14,20 @@ class ModelVisualizer:
         df["r2"] = [model.r2_score for model in models]
         df["Ns_coeff"] = [model.N_coefs for model in models]
         # Export the csv file
-        df.to_csv(f"{model_name}_tradeoff_data.csv", index=False)
+        df.to_csv(export_dir / "tradeoff_data.csv", index=False)
 
     def export_all_plots(
-        self, all_models, best_models, X, y, X_names, y_name, model_name: str
+        self, all_models, best_models, X, y, X_names, y_name, export_dir
     ):
         """Export all plots at once."""
         # Export the plots
-        self.export_tradeoff_plot(all_models, model_name)
-        self.export_actual_vs_predicted_plot(best_models, X, y, model_name)
+        self.export_tradeoff_plot(all_models, export_dir)
+        self.export_actual_vs_predicted_plot(best_models, X, y, export_dir)
         self.export_best_models_predictions_plot(
-            best_models, X, y, X_names, y_name, model_name
+            best_models, X, y, X_names, y_name, export_dir
         )
 
-    def export_tradeoff_plot(self, models, model_name: str):
+    def export_tradeoff_plot(self, models, export_dir):
         """Export the tradeoff plot between accuracy and simplicity."""
         # Extract the plotted quanties
         betas = [model.alpha for model in models]
@@ -54,10 +54,10 @@ class ModelVisualizer:
         plt.title("Accuracy-Simplicity Tradeoff plot")
         plt.grid(True, linestyle="--", alpha=0.6)
         plt.tight_layout()
-        plt.savefig(f"{model_name}_tradeoff.svg")
+        plt.savefig(export_dir / "tradeoff.svg")
         plt.close()
 
-    def export_actual_vs_predicted_plot(self, best_models, X, y, model_name: str):
+    def export_actual_vs_predicted_plot(self, best_models, X, y, export_dir):
         """Export the actual vs. predicted plot."""
         plt.figure()
         ax = plt.gca()
@@ -75,11 +75,11 @@ class ModelVisualizer:
         plt.legend()
         plt.grid()
         plt.tight_layout()
-        plt.savefig(f"{model_name}_actual_vs_predicted.svg")
+        plt.savefig(export_dir / "actual_vs_predicted.svg")
         plt.close()
 
     def export_best_models_predictions_plot(
-        self, best_models, X, y, X_names, y_name, model_name: str
+        self, best_models, X, y, X_names, y_name, export_dir
     ):
         """Export the best models' predictions vs. data plot."""
         plt.figure()
@@ -94,5 +94,5 @@ class ModelVisualizer:
         plt.grid()
         plt.legend()
         plt.tight_layout()
-        plt.savefig(f"{model_name}_predictions_vs_data.svg")
+        plt.savefig(export_dir / "predictions_vs_data.svg")
         plt.close()
