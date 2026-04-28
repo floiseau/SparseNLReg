@@ -1,9 +1,31 @@
+import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.metrics import PredictionErrorDisplay
 
 
 class ModelVisualizer:
     """Handles visualization and export of model plots."""
+
+    def export_tradeoff_data(self, models, model_name: str):
+        # Initialize a dataframe
+        df = pd.DataFrame()
+        # Gather the data
+        df["beta"] = [model.alpha for model in models]
+        df["r2"] = [model.r2_score for model in models]
+        df["Ns_coeff"] = [model.N_coefs for model in models]
+        # Export the csv file
+        df.to_csv(f"{model_name}_tradeoff_data.csv", index=False)
+
+    def export_all_plots(
+        self, all_models, best_models, X, y, X_names, y_name, model_name: str
+    ):
+        """Export all plots at once."""
+        # Export the plots
+        self.export_tradeoff_plot(all_models, model_name)
+        self.export_actual_vs_predicted_plot(best_models, X, y, model_name)
+        self.export_best_models_predictions_plot(
+            best_models, X, y, X_names, y_name, model_name
+        )
 
     def export_tradeoff_plot(self, models, model_name: str):
         """Export the tradeoff plot between accuracy and simplicity."""
@@ -74,13 +96,3 @@ class ModelVisualizer:
         plt.tight_layout()
         plt.savefig(f"{model_name}_predictions_vs_data.svg")
         plt.close()
-
-    def export_all_plots(
-        self, all_models, best_models, X, y, X_names, y_name, model_name: str
-    ):
-        """Export all plots at once."""
-        self.export_tradeoff_plot(all_models, model_name)
-        self.export_actual_vs_predicted_plot(best_models, X, y, model_name)
-        self.export_best_models_predictions_plot(
-            best_models, X, y, X_names, y_name, model_name
-        )

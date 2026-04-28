@@ -58,3 +58,10 @@ test_size = 0.2
 # Optional : false by default
 polish = true
 
+[export]
+# Whether to generate the svg plots
+# Optional : true by default
+export_plots = true
+# Whether to export tradeoff data into a CSV file
+# Optional : true by default
+export_plot_data = true

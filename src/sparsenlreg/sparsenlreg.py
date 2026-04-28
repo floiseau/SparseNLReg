@@ -59,9 +59,16 @@ def main():
     model_reporter.generate_markdown_report(best_models, X_names, y_name, model_name)
     model_reporter.display_terminal_table(best_models, X_names, y_name)
 
-    # Plots
+    # Export the plots
     visualizer = ModelVisualizer()
-    visualizer.export_all_plots(models, best_models, X, y, X_names, y_name, model_name)
+    if config.export_plots:
+        visualizer = ModelVisualizer()
+        visualizer.export_all_plots(
+            models, best_models, X, y, X_names, y_name, model_name
+        )
+    # Export the data
+    if config.export_tradeoff_data:
+        visualizer.export_tradeoff_data(models, model_name)
 
 
 if __name__ == "__main__":

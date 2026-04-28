@@ -33,6 +33,10 @@ class LASSOConfig:
     # Training
     polish: bool
 
+    # Export
+    export_plots: bool
+    export_tradeoff_data: bool
+
 
 def parse_config_file(file_path: str) -> LASSOConfig:
     """Parse the TOML config file and return the LASSOConfig."""
@@ -65,6 +69,11 @@ def parse_config_file(file_path: str) -> LASSOConfig:
         "test_size": config["model_selection"].get("test_size", 0.0),
         # Training
         "polish": config.get("training", {}).get("polish", False),
+        # Export
+        "export_plots": config.get("export", {}).get("export_plots", True),
+        "export_tradeoff_data": config.get("export", {}).get(
+            "export_tradeoff_data", True
+        ),
     }
 
     # Check for invalid values
