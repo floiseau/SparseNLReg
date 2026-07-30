@@ -10,7 +10,7 @@ class Model:
         self.assess(X_test, y_test)
 
         # Flatten the coefficients if necessary
-        if type(self.intercept_) is not np.float64:
+        if self.intercept_ and type(self.intercept_) is not np.float64:
             self.coef_ = self.coef_.ravel()
             self.intercept_ = self.intercept_[0]
 
