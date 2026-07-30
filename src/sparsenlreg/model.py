@@ -9,6 +9,11 @@ class Model:
         self.fit(X_train, y_train)
         self.assess(X_test, y_test)
 
+        # Flatten the coefficients if necessary
+        if type(self.intercept_) is not np.float64:
+            self.coef_ = self.coef_.ravel()
+            self.intercept_ = self.intercept_[0]
+
     def assess(self, X_test, y_test):
         self.r2_score = self._calculate_r2_score(X_test, y_test)
         self.N_coefs = self._count_nonzero_coefficients()

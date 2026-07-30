@@ -1,3 +1,5 @@
+from functools import partial
+
 import numpy as np
 from sparsenlreg.model import LarsModel, ElasticNetModel
 from sklearn.model_selection import train_test_split
@@ -20,14 +22,14 @@ class ModelTrainer:
         # Setup the feature manager
         self.feature_manager = FeatureManager(config)
 
-    def _generate_betas(self):
-        return 10 ** np.linspace(self.log_beta_min, self.log_beta_max, num=self.N_fit)
-
     def create_model(self, beta):
         match self.solver.lower():
             case "lars":
                 model = LarsModel(
-                    alpha=beta, fit_intercept=self.fit_intercept, max_iter=512
+                    alpha=beta,
+                    fit_intercept=self.fit_intercept,
+                    max_iter=512,
+                    # fit_path=False,
                 )
             case "coordinate_descent":
                 model = ElasticNetModel(
@@ -65,17 +67,26 @@ class ModelTrainer:
         X_train, X_test, y_train, y_test = data
         return X, X_train, X_test, y, y_train, y_test, X_names, y_name
 
+    def _generate_betas(self):
+        return 10 ** np.linspace(self.log_beta_min, self.log_beta_max, num=self.N_fit)
+
+    def _train_single_model(self, beta, X_train, y_train, X_test, y_test):
+        model = self.create_model(beta)
+        model.fit_and_assess(X_train, y_train, X_test, y_test)
+        return model
+
     def train(self, X_train, y_train, X_test, y_test):
         # Define the values of beta
         betas = self._generate_betas()
-        # Create arrays to store the results
-        models = [None for _ in range(self.N_fit)]
         # Perform the sparse regression for different values of beta
-        for i, beta in enumerate(betas):
-            model = self.create_model(beta)
-            model.fit_and_assess(X_train, y_train, X_test, y_test)
-            models[i] = model
-        return models
+        func = partial(
+            self._train_single_model,
+            X_train=X_train,
+            y_train=y_train,
+            X_test=X_test,
+            y_test=y_test,
+        )
+        return list(map(func, betas))
 
     def select_best_models(self, models):
         # Create a list of models
