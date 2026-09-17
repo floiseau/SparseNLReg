@@ -1,0 +1,38 @@
+[data]
+dataset = "dataset.csv"
+
+# Degree=2 => R2=0.997
+[model_features]
+base_features = [
+	"(1-a_W)",
+	"(1-Lc_L)",
+	"exp(a_W)",
+	"exp(Lc_L)",
+]
+base_feature_names = [
+	"\\left(1-\\frac{a}{W}\\right)",
+	"\\left(1-\\frac{L_c}{L}\\right)",
+	"\\exp\\left(\\frac{a}{W} \\right)",
+	"\\exp\\left(\\frac{L_c}{L}\\right)",
+]
+
+[model_output]
+output = "KIII_euler"
+output_name = "\\hat{K}_{III}^{e}"
+
+[polynomial]
+degree = 12
+
+[tradeoff_exploration]
+solver = "lars"
+# solver = "coordinate_descent"
+# coordinate_descent_selection = "random"
+N_fit = 512
+log_beta_min = -2
+log_beta_max = 1
+
+[model_selection]
+N_coeff_max = 4
+
+[training]
+polish = true

@@ -55,15 +55,13 @@ class Model:
         X_selected = X_train[:, nonzero_indices]
 
         # Refitting without regularization (using Ordinary Least Squares)
-        refitted_linear_model = LinearRegression(fit_intercept=self.fit_intercept)
+        refitted_linear_model = LinearRegression(fit_intercept=False)
         refitted_linear_model.fit(X_selected, y_train)
 
         # Update the coefficients of the original model
         self.coef_[:] = 0
         self.coef_[nonzero_indices] = refitted_linear_model.coef_
-
-        if self.fit_intercept:
-            self.intercept_ = refitted_linear_model.intercept_
+        self.intercept_ = refitted_linear_model.intercept_
 
         # Re-assess the model
         self.assess(X_test, y_test)

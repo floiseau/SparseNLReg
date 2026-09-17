@@ -1,0 +1,39 @@
+[data]
+dataset = "dataset_no_angle_90.csv"
+
+[model_features]
+base_features = [
+	"cos(deg2rad(alpha))",
+	"sin(deg2rad(alpha))",
+  "tan(deg2rad(alpha))",
+  "1/(1+W**2)",
+  "1/(1+H**2)",
+]
+base_feature_names = [
+	"\\cos(\\alpha)",
+	"\\sin(\\alpha)",
+  "\\tan(\\alpha)",
+  "\\frac{1}{1+W^2}",
+  "\\frac{1}{1+H^2}",
+]
+
+[model_output]
+output = "T"
+output_name = "T(\\alpha, \\hat{W}, \\hat{H})"
+
+[polynomial]
+degree = 6
+
+[tradeoff_exploration]
+solver = "lars"
+N_fit = 512
+log_beta_min = -2
+log_beta_max = 0
+
+[model_selection]
+N_coeff_max = 4
+test_size = 0.2
+
+[training]
+polish = true
+

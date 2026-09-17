@@ -23,9 +23,6 @@ output_name = "y(x_1, x_2)"
 # Degree of polynomial features to generate
 degree = 2
 
-# Whether to fit an intercept term
-fit_intercept = true
-
 [tradeoff_exploration]
 # Number of β values to explore in the tradeoff analysis
 N_fit = 128

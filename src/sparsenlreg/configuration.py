@@ -17,7 +17,6 @@ class LASSOConfig:
 
     # Polynomial parameters
     degree: int
-    fit_intercept: bool
 
     # Tradeoff exploration
     N_fit: int
@@ -55,7 +54,6 @@ def parse_config_file(file_path: str) -> LASSOConfig:
         "output_name": config["model_output"]["output_name"],
         # Polynomial
         "degree": config["polynomial"]["degree"],
-        "fit_intercept": config["polynomial"]["fit_intercept"],
         # Tradeoff exploration
         "N_fit": config["tradeoff_exploration"]["N_fit"],
         "log_beta_min": config["tradeoff_exploration"]["log_beta_min"],

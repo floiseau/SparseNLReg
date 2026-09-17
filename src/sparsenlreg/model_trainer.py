@@ -13,7 +13,6 @@ class ModelTrainer:
         self.log_beta_min = config.log_beta_min
         self.log_beta_max = config.log_beta_max
         self.N_fit = config.N_fit
-        self.fit_intercept = config.fit_intercept
         self.test_size = config.test_size
         self.solver = config.solver
         # Selection
@@ -27,7 +26,7 @@ class ModelTrainer:
             case "lars":
                 model = LarsModel(
                     alpha=beta,
-                    fit_intercept=self.fit_intercept,
+                    fit_intercept=False,
                     max_iter=512,
                     # fit_path=False,
                 )
@@ -35,7 +34,7 @@ class ModelTrainer:
                 model = ElasticNetModel(
                     alpha=beta,
                     l1_ratio=1.0,
-                    fit_intercept=self.fit_intercept,
+                    fit_intercept=False,
                     tol=1e-6,
                     max_iter=512,
                     selection=self.coordinate_descent_selection,

@@ -1,0 +1,38 @@
+[data]
+dataset = "dataset.csv"
+
+# Degree=2 => R2=0.997
+[model_features]
+base_features = [
+	"a_W",
+	"Lc_L",
+	"1-a_W",
+	"1-Lc_L",
+]
+base_feature_names = [
+	"\\frac{a}{W}",
+	"\\frac{L_c}{L}",
+	"\\left(1-\\frac{a}{W}\\right)",
+	"\\left(1-\\frac{L_c}{L}\\right)",
+]
+
+[model_output]
+output = "KII_euler"
+output_name = "\\hat{K}_{II}^{e}"
+
+[polynomial]
+degree = 6
+
+[tradeoff_exploration]
+solver = "lars"
+# solver = "coordinate_descent"
+# coordinate_descent_selection = "random"
+N_fit = 512
+log_beta_min = -2
+log_beta_max = 2
+
+[model_selection]
+N_coeff_max = 4
+
+[training]
+polish = true

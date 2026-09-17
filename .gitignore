@@ -1,7 +1,9 @@
 # Plots
 *.svg
 # Reports
-*_report.md
+*report.md
+# Work in progress
+WIP_*/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

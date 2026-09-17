@@ -1,0 +1,94 @@
+[data]
+dataset = "dataset.csv"
+
+[model_features]
+base_features = [
+  "sin(deg2rad(phi))",
+  "sin(2*deg2rad(phi))",
+  "sin(3*deg2rad(phi))",
+  "sin(4*deg2rad(phi))",
+  "sin(5*deg2rad(phi))",
+  "sin(6*deg2rad(phi))",
+  "sin(7*deg2rad(phi))",
+  "sin(8*deg2rad(phi))",
+  "sin(9*deg2rad(phi))",
+  "sin(10*deg2rad(phi))",
+  "sin(11*deg2rad(phi))",
+  "sin(12*deg2rad(phi))",
+  "sin(13*deg2rad(phi))",
+  "sin(14*deg2rad(phi))",
+  "sin(15*deg2rad(phi))",
+  "sin(16*deg2rad(phi))",
+  "sin(17*deg2rad(phi))",
+  "sin(18*deg2rad(phi))",
+  "sin(19*deg2rad(phi))",
+  "sin(20*deg2rad(phi))",
+  "sin(21*deg2rad(phi))",
+  "sin(22*deg2rad(phi))",
+  "sin(23*deg2rad(phi))",
+  "sin(24*deg2rad(phi))",
+  "sin(25*deg2rad(phi))",
+  "sin(26*deg2rad(phi))",
+  "sin(27*deg2rad(phi))",
+  "sin(28*deg2rad(phi))",
+  "sin(29*deg2rad(phi))",
+  "sin(30*deg2rad(phi))",
+  "sin(31*deg2rad(phi))",
+  "sin(32*deg2rad(phi))",
+]
+base_feature_names = [
+  "sin(deg2rad(phi))",
+  "sin(2*deg2rad(phi))",
+  "sin(3*deg2rad(phi))",
+  "sin(4*deg2rad(phi))",
+  "sin(5*deg2rad(phi))",
+  "sin(6*deg2rad(phi))",
+  "sin(7*deg2rad(phi))",
+  "sin(8*deg2rad(phi))",
+  "sin(9*deg2rad(phi))",
+  "sin(10*deg2rad(phi))",
+  "sin(11*deg2rad(phi))",
+  "sin(12*deg2rad(phi))",
+  "sin(13*deg2rad(phi))",
+  "sin(14*deg2rad(phi))",
+  "sin(15*deg2rad(phi))",
+  "sin(16*deg2rad(phi))",
+  "sin(17*deg2rad(phi))",
+  "sin(18*deg2rad(phi))",
+  "sin(19*deg2rad(phi))",
+  "sin(20*deg2rad(phi))",
+  "sin(21*deg2rad(phi))",
+  "sin(22*deg2rad(phi))",
+  "sin(23*deg2rad(phi))",
+  "sin(24*deg2rad(phi))",
+  "sin(25*deg2rad(phi))",
+  "sin(26*deg2rad(phi))",
+  "sin(27*deg2rad(phi))",
+  "sin(28*deg2rad(phi))",
+  "sin(29*deg2rad(phi))",
+  "sin(30*deg2rad(phi))",
+  "sin(31*deg2rad(phi))",
+  "sin(32*deg2rad(phi))",
+]
+
+[model_output]
+output = "F21"
+output_name = "F21"
+
+[polynomial]
+degree = 1
+
+[tradeoff_exploration]
+solver = "lars"
+# solver = "coordinate_descent"
+# coordinate_descent_selection = "random"
+N_fit = 128
+log_beta_min = -2
+log_beta_max = 0
+
+[model_selection]
+N_coeff_max = 4
+test_size = 0.0
+
+[training]
+polish = true

@@ -1,0 +1,40 @@
+[data]
+dataset = "dataset.csv"
+
+[model_features]
+base_features = [
+  "deg2rad(phi)",
+  "(pi/2-deg2rad(phi))",
+  "cos(deg2rad(phi))",
+  "sin(deg2rad(phi))",
+  "tan(deg2rad(phi))",
+]
+base_feature_names = [
+  "\\phi",
+  "(\\pi/2 - \\phi)",
+  "\\cos(\\phi)",
+  "\\sin(\\phi)",
+  "\\tan(\\phi)",
+]
+
+[model_output]
+output = "F33"
+output_name = "F33"
+
+[polynomial]
+degree = 8
+
+[tradeoff_exploration]
+solver = "lars"
+# solver = "coordinate_descent"
+# coordinate_descent_selection = "random"
+N_fit = 128
+log_beta_min = -2
+log_beta_max = 0
+
+[model_selection]
+N_coeff_max = 4
+test_size = 0.0
+
+[training]
+polish = true
