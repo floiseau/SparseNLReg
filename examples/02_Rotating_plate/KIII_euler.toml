@@ -20,7 +20,9 @@ base_feature_names = [
 output = "KIII_euler"
 output_name = "\\hat{K}_{III}^{e}"
 
-[polynomial]
+[expansion]
+type = "polynomial"
+[expansion.parameters]
 degree = 12
 
 [tradeoff_exploration]

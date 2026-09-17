@@ -46,9 +46,9 @@ class ModelTrainer:
 
         return model
 
-    def setup_training_data(self, df, degree: int):
+    def setup_training_data(self, df):
         # Generate the features
-        X, X_names = self.feature_manager.generate_polynomial_features(df, degree)
+        X, X_names = self.feature_manager.generate_expanded_features(df)
         y, y_name = self.feature_manager.generate_output(df)
         X_scaled = self.feature_manager.scale_features(X)
         y_scaled = self.feature_manager.scale_output(y)

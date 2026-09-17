@@ -21,7 +21,9 @@ base_feature_names = [
 output = "T"
 output_name = "T(\\alpha, \\hat{W}, \\hat{H})"
 
-[polynomial]
+[expansion]
+type = "polynomial"
+[expansion.parameters]
 degree = 6
 
 [tradeoff_exploration]

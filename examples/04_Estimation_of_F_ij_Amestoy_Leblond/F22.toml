@@ -75,7 +75,9 @@ base_feature_names = [
 output = "F22"
 output_name = "F22"
 
-[polynomial]
+[expansion]
+type = "polynomial"
+[expansion.parameters]
 degree = 1
 
 [tradeoff_exploration]

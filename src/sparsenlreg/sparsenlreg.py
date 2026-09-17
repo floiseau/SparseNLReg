@@ -45,7 +45,7 @@ def main():
     # Train the models
     model_trainer = ModelTrainer(config)
     X, X_train, X_test, y, y_train, y_test, X_names, y_name = (
-        model_trainer.setup_training_data(df, config.degree)
+        model_trainer.setup_training_data(df)
     )
     models = model_trainer.train(X_train, y_train, X_test, y_test)
 

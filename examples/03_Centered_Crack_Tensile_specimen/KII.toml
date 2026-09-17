@@ -21,7 +21,9 @@ base_feature_names = [
 output = "KII"
 output_name = "K_{II}(\\alpha, \\hat{W}, \\hat{H})"
 
-[polynomial]
+[expansion]
+type = "polynomial"
+[expansion.parameters]
 degree = 3
 
 [tradeoff_exploration]

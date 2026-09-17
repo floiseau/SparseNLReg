@@ -9,7 +9,10 @@ base_feature_names = ["a/b", "\\exp(a/b)", "\\frac{1}{\\sqrt{1-a/b}}"]
 output = "KI_adim"
 output_name = "\\hat{K}_{I}"
 
-[polynomial]
+[expansion]
+type = "polynomial"
+
+[expansion.parameters]
 degree = 3
 
 [tradeoff_exploration]

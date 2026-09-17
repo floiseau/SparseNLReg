@@ -13,6 +13,9 @@ class FeatureManager:
         # Input
         self.base_features = config.base_features
         self.base_feature_names = config.base_feature_names
+        # expansion
+        self.expansion = config.expansion
+        self.expansion_parameters = config.expansion_parameters
         # Output
         self.output = config.output
         self.output_name = config.output_name
@@ -43,13 +46,11 @@ class FeatureManager:
 
         return np.array(results) if is_list else np.array(results[0])
 
-    def generate_polynomial_features(self, df: DataFrame, degree: int):
+    def generate_expanded_features(self, df: DataFrame):
         # Generate the base features
         X_base_feat = self._generate_base_features(df)
         # Generate the polynomial features
-        X, X_names = self._transform_base_features_to_polynomial_features(
-            X_base_feat, degree
-        )
+        X, X_names = self._expand_base_features(X_base_feat)
         return X, X_names
 
     def _generate_base_features(self, df: DataFrame) -> np.ndarray:
@@ -59,23 +60,30 @@ class FeatureManager:
         X_base_feat_list = self._evaluate_expression_or_column(df, self.base_features)
         return np.column_stack(X_base_feat_list)
 
-    def _transform_base_features_to_polynomial_features(self, X_base_feat, degree=10):
+    def _expand_base_features(self, X_base_feat):
         """
-        Convert an array of base features into an array of polynomial features.
+        Convert an array of base features into an array of transformed features.
 
         Parameters:
         - X_base_feat: array-like, input features
         - X_base_feat_names: array-like, names of input features
-        - degree: int, degree of polynomial features (default: 10)
+        - pars: dict, dictionnary of the expansion parameters
 
         Returns:
         - X: ndarray, matrix of polynomial features
         - X_names: list, names of the polynomial features
         """
-        # Generate polynomial features
-        pf = PolynomialFeatures(degree=degree, include_bias=False)
-        X = pf.fit_transform(X_base_feat)
-        X_names = pf.get_feature_names_out(self.base_feature_names)
+        if self.expansion is None:
+            X = X_base_feat
+            X_names = self.base_feature_names
+
+        elif self.expansion == "polynomial":
+            # Extract the parameters
+            degree = self.expansion_parameters["degree"]
+            # Generate polynomial features
+            pf = PolynomialFeatures(degree=degree, include_bias=False)
+            X = pf.fit_transform(X_base_feat)
+            X_names = pf.get_feature_names_out(self.base_feature_names)
         return X, X_names
 
     def scale_features(self, X: np.array):

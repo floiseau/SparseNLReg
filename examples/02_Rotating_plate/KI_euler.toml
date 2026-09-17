@@ -16,7 +16,9 @@ base_feature_names = [
 output = "log(KI_euler)"
 output_name = "\\log(\\hat{K}_{I}^{e})"
 
-[polynomial]
+[expansion]
+type = "polynomial"
+[expansion.parameters]
 degree = 3
 
 [tradeoff_exploration]
