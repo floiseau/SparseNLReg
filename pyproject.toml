@@ -1,11 +1,11 @@
 
 [project]
 name = "sparsenlreg"
-version="2025.12.22"
+version="2026.10.07"
 authors = [
-    {name = "Flavien Loiseau", email = "flavien.loiseau@ensta.fr"},
+    {name = "Flavien Loiseau", email = "flavien.loiseau@insa-lyon.fr"},
 ]
-description = "Polynomial sparse regression using non-linear features for symbolic regression."
+description = "Non-linear sparse regression based on LASSO and non-linear feature expansion for symbolic regression."
 readme = "README.md"
 license = { file = "LICENSE"}
 classifiers = [
