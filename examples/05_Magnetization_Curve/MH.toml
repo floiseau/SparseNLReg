@@ -5,13 +5,9 @@ dataset = "courbeMH.csv"
 base_features = [
   "1/H",
 ]
-base_feature_names = [
-  "1/H",
-]
 
 [model_output]
 output = "M"
-output_name = "M"
 
 [[expansions]]
 type = "polynomial"

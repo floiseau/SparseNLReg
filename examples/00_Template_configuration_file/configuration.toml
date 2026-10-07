@@ -9,15 +9,11 @@ dataset = "path/to/your/dataset.csv"
 # List of base features to use in the model. These can be column names or SymPy expressions.
 base_features = ["x1", "x2", "cos(x1)", "1/(x1+x2)"]
 
-# LaTeX names of the base features for display purposes
-base_feature_names = ["x_1", "x_2", "\\cos(x_1)", "\\frac{1}{x_1+x_2}"]
-
 [model_output]
 # Expression for the output variable. Can be a column name or SymPy expression.
 output = "y"
 
 # Name of the output variable for display purposes
-output_name = "y(x_1, x_2)"
 
 [[expansions]] # This section is optional
 # Type of expansion (polynomial)

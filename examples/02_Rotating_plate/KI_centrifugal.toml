@@ -9,16 +9,9 @@ base_features = [
 	"exp(a_W)",
 	"exp(Lc_L)",
 ]
-base_feature_names = [
-	"\\frac{a}{W}",
-	"\\frac{L_c}{L}",
-	"\\exp\\left(\\frac{a}{W}\\right)",
-	"\\exp\\left(\\frac{L_c}{L}\\right)",
-]
 
 [model_output]
 output = "log(KI_centrifugal)"
-output_name = "\\log(\\hat{K}_{I}^{\\omega})"
 
 [[expansions]]
 type = "polynomial"

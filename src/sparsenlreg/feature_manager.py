@@ -13,12 +13,10 @@ class FeatureManager:
     def __init__(self, config: LASSOConfig):
         # Input
         self.base_features = config.base_features
-        self.base_feature_names = config.base_feature_names
         # expansion
         self.expansions = config.expansions
         # Output
         self.output = config.output
-        self.output_name = config.output_name
 
     def _evaluate_expression_or_column(
         self,
@@ -37,30 +35,36 @@ class FeatureManager:
             if e in df.columns:
                 results.append(df[e].to_numpy())
             else:
+                # Generate a function from the expression
                 expr_sym = sp.sympify(e)
                 symbols = list(expr_sym.free_symbols)
-                symbol_names = [symb.name for symb in symbols]
                 f = sp.lambdify(symbols, expr_sym, "numpy")
+                # Evaluate the function
+                symbol_names = [symb.name for symb in symbols]
                 f_args = (df[name] for name in symbol_names)
                 results.append(f(*f_args))
-
-        return np.array(results) if is_list else np.array(results[0])
+        # Store and return the results
+        X = np.array(results) if is_list else np.array(results[0])
+        X_names = exprs
+        return X, X_names
 
     def generate_expanded_features(self, df: DataFrame):
         # Generate the base features
-        X_base_feat = self._generate_base_features(df)
+        X_base_feat, X_base_feat_names = self._generate_base_features(df)
         # Generate the polynomial features
-        X, X_names = self._expand_base_features(X_base_feat, df)
+        X, X_names = self._expand_base_features(X_base_feat, X_base_feat_names, df)
         return X, X_names
 
     def _generate_base_features(self, df: DataFrame) -> np.ndarray:
         """
         Generate base features from a DataFrame and a list of feature expressions.
         """
-        X_base_feat_list = self._evaluate_expression_or_column(df, self.base_features)
-        return np.column_stack(X_base_feat_list)
+        X_base_feat_list, X_base_feat_names = self._evaluate_expression_or_column(
+            df, self.base_features
+        )
+        return np.column_stack(X_base_feat_list), X_base_feat_names
 
-    def _expand_base_features(self, X_base_feat, df):
+    def _expand_base_features(self, X_base_feat, X_base_feat_names, df):
         """
         Convert an array of base features into an array of transformed features.
 
@@ -75,7 +79,7 @@ class FeatureManager:
         """
         # Initialize the expansions
         X = X_base_feat
-        X_names = self.base_feature_names
+        X_names = X_base_feat_names
 
         # Iteratre through the expansions
         for expansion in self.expansions:
@@ -163,6 +167,5 @@ class FeatureManager:
         Generate output from a DataFrame and an output expression.
 
         """
-        y = self._evaluate_expression_or_column(df, self.output)
-        y_name = self.output_name
+        y, (y_name,) = self._evaluate_expression_or_column(df, self.output)
         return y, y_name

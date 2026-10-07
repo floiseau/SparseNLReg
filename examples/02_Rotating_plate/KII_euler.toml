@@ -9,16 +9,9 @@ base_features = [
 	"1-a_W",
 	"1-Lc_L",
 ]
-base_feature_names = [
-	"\\frac{a}{W}",
-	"\\frac{L_c}{L}",
-	"\\left(1-\\frac{a}{W}\\right)",
-	"\\left(1-\\frac{L_c}{L}\\right)",
-]
 
 [model_output]
 output = "KII_euler"
-output_name = "\\hat{K}_{II}^{e}"
 
 [[expansions]]
 type = "polynomial"

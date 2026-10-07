@@ -9,11 +9,9 @@ class LASSOConfig:
 
     # Model features
     base_features: list
-    base_feature_names: list
 
     # Model output
     output: str
-    output_name: str
 
     # Expansion
     expansions: list
@@ -48,12 +46,9 @@ def parse_config_file(file_path: str) -> LASSOConfig:
     flattened_config["dataset"] = config["data"]["dataset"]
     # Model Features
     flattened_config["base_features"] = config["model_features"]["base_features"]
-    flattened_config["base_feature_names"] = config["model_features"][
-        "base_feature_names"
-    ]
+
     # Model Output
     flattened_config["output"] = config["model_output"]["output"]
-    flattened_config["output_name"] = config["model_output"]["output_name"]
     # Expansion
     flattened_config["expansions"] = config.get("expansions", [])
     # Tradeoff exploration

@@ -40,8 +40,6 @@ def main():
     # Read the CSV file
     df = pd.read_csv(config.dataset, comment="#")
 
-    # TODO: Change of polynomial order to a list of orders ?
-
     # Train the models
     model_trainer = ModelTrainer(config)
     X, X_train, X_test, y, y_train, y_test, X_names, y_name = (

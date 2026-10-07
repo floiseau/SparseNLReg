@@ -9,17 +9,9 @@ base_features = [
   "sin(deg2rad(phi))",
   "tan(deg2rad(phi))",
 ]
-base_feature_names = [
-  "\\phi",
-  "(\\pi/2 - \\phi)",
-  "\\cos(\\phi)",
-  "\\sin(\\phi)",
-  "\\tan(\\phi)",
-]
 
 [model_output]
 output = "F33"
-output_name = "F33"
 
 [[expansions]]
 type = "polynomial"

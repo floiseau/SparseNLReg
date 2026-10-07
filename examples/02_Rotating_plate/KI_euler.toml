@@ -7,14 +7,9 @@ base_features = [
 	"exp(a_W)",
 	"exp(Lc_L)",
 ]
-base_feature_names = [
-	"\\exp\\left(\\frac{a}{W}\\right)",
-	"\\exp\\left(\\frac{L_c}{L}\\right)",
-]
 
 [model_output]
 output = "log(KI_euler)"
-output_name = "\\log(\\hat{K}_{I}^{e})"
 
 [[expansions]]
 type = "polynomial"
