@@ -21,6 +21,15 @@ type = "polynomial"
 # Degree of polynomial features to generate
 degree = 2
 
+[[expansions]] # This section is optional
+# Type of expansion (custom)
+type = "custom"
+# Expression of the expansion
+expression = "1/tanh(H/Hc)"
+# Values taken by the parameters Hc
+Hc = [30, 35, 40, 45, 50, 55, 60]
+# NOTE: When multiple paramaters are present, it generates all the possible combinations.
+
 [tradeoff_exploration]
 # Number of β values to explore in the tradeoff analysis
 N_fit = 128
