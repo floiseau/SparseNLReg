@@ -1,4 +1,5 @@
 from typing import List, Union
+import itertools
 
 from pandas import DataFrame
 import sympy as sp
@@ -14,8 +15,7 @@ class FeatureManager:
         self.base_features = config.base_features
         self.base_feature_names = config.base_feature_names
         # expansion
-        self.expansion = config.expansion
-        self.expansion_parameters = config.expansion_parameters
+        self.expansions = config.expansions
         # Output
         self.output = config.output
         self.output_name = config.output_name
@@ -50,7 +50,7 @@ class FeatureManager:
         # Generate the base features
         X_base_feat = self._generate_base_features(df)
         # Generate the polynomial features
-        X, X_names = self._expand_base_features(X_base_feat)
+        X, X_names = self._expand_base_features(X_base_feat, df)
         return X, X_names
 
     def _generate_base_features(self, df: DataFrame) -> np.ndarray:
@@ -60,7 +60,7 @@ class FeatureManager:
         X_base_feat_list = self._evaluate_expression_or_column(df, self.base_features)
         return np.column_stack(X_base_feat_list)
 
-    def _expand_base_features(self, X_base_feat):
+    def _expand_base_features(self, X_base_feat, df):
         """
         Convert an array of base features into an array of transformed features.
 
@@ -73,17 +73,53 @@ class FeatureManager:
         - X: ndarray, matrix of polynomial features
         - X_names: list, names of the polynomial features
         """
-        if self.expansion is None:
-            X = X_base_feat
-            X_names = self.base_feature_names
+        # Initialize the expansions
+        X = X_base_feat
+        X_names = self.base_feature_names
 
-        elif self.expansion == "polynomial":
-            # Extract the parameters
-            degree = self.expansion_parameters["degree"]
-            # Generate polynomial features
-            pf = PolynomialFeatures(degree=degree, include_bias=False)
-            X = pf.fit_transform(X_base_feat)
-            X_names = pf.get_feature_names_out(self.base_feature_names)
+        # Iteratre through the expansions
+        for expansion in self.expansions:
+            match expansion["type"]:
+                case "polynomial":
+                    # Extract the parameters
+                    degree = expansion["degree"]
+                    # Generate polynomial features
+                    pf = PolynomialFeatures(degree=degree, include_bias=False)
+                    X = pf.fit_transform(X)
+                    X_names = pf.get_feature_names_out(X_names)
+
+                case "custom":
+                    # Convert the expression into a function
+                    expr_sym = sp.sympify(expansion["expression"])
+                    symbols = list(expr_sym.free_symbols)
+                    f = sp.lambdify(symbols, expr_sym, "numpy")
+                    # Extract the variables and parameters
+                    vars = {
+                        s.name: df[s.name].to_numpy()
+                        for s in symbols
+                        if s.name in df.columns
+                    }
+                    # Create all the combinations of parameters
+                    par_names = [s.name for s in symbols if s.name in expansion]
+                    pars_combinations = itertools.product(
+                        *[expansion[n] for n in par_names]
+                    )
+                    # Create expanded features
+                    X_new = []
+                    for pars_comb in pars_combinations:
+                        # Create the list of arguments
+                        par_kwargs = {
+                            par_names[i]: pars_comb[i] for i in range(len(par_names))
+                        }
+                        kwargs = vars | par_kwargs
+                        # Evaluate the function to create the new feature
+                        X_new.append(f(**kwargs))
+                        # Set the feature name
+                        name_new = str(expr_sym.subs(par_kwargs))
+                        X_names = np.concatenate([X_names, [name_new]])
+                    # Update the X array
+                    X_new = np.array(X_new).T
+                    X = np.concatenate([X, X_new], axis=1)
         return X, X_names
 
     def scale_features(self, X: np.array):

@@ -20,9 +20,8 @@ base_feature_names = [
 output = "log(KI_centrifugal)"
 output_name = "\\log(\\hat{K}_{I}^{\\omega})"
 
-[expansion]
+[[expansions]]
 type = "polynomial"
-[expansion.parameters]
 degree = 1
 
 [tradeoff_exploration]

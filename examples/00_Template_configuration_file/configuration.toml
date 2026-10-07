@@ -19,11 +19,9 @@ output = "y"
 # Name of the output variable for display purposes
 output_name = "y(x_1, x_2)"
 
-[expansion] # This section is optional
+[[expansions]] # This section is optional
 # Type of expansion (polynomial)
 type = "polynomial"
-
-[expansion.parameters] # For polynomial expansion
 # Degree of polynomial features to generate
 degree = 2
 

@@ -16,8 +16,7 @@ class LASSOConfig:
     output_name: str
 
     # Expansion
-    expansion: str
-    expansion_parameters: dict
+    expansions: list
 
     # Tradeoff exploration
     N_fit: int
@@ -56,10 +55,7 @@ def parse_config_file(file_path: str) -> LASSOConfig:
     flattened_config["output"] = config["model_output"]["output"]
     flattened_config["output_name"] = config["model_output"]["output_name"]
     # Expansion
-    flattened_config["expansion"] = config.get("expansion", {}).get("type", None)
-    flattened_config["expansion_parameters"] = config.get("expansion", {}).get(
-        "parameters", {}
-    )
+    flattened_config["expansions"] = config.get("expansions", [])
     # Tradeoff exploration
     flattened_config["N_fit"] = config["tradeoff_exploration"]["N_fit"]
     flattened_config["log_beta_min"] = config["tradeoff_exploration"]["log_beta_min"]
@@ -86,10 +82,5 @@ def parse_config_file(file_path: str) -> LASSOConfig:
         raise ValueError(
             "The coordinate_descent_selection value is invalid. Please choose either 'random' or 'cyclic'."
         )
-    if flattened_config["expansion"] == "polynomial":
-        if "degree" not in flattened_config["expansion_parameters"]:
-            raise ValueError(
-                "The degree must be specified when using the polynomial expansion."
-            )
 
     return LASSOConfig(**flattened_config)

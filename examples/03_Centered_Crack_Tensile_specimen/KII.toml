@@ -5,14 +5,14 @@ dataset = "dataset.csv"
 base_features = [
 	"cos(deg2rad(alpha))",
 	"sin(deg2rad(alpha))",
-  "tan(deg2rad(alpha))",
+  # "tan(deg2rad(alpha))",
   "1/(1+W**2)",
   "1/(1+H**2)",
 ]
 base_feature_names = [
 	"\\cos(\\alpha)",
 	"\\sin(\\alpha)",
-  "\\tan(\\alpha)",
+  # "\\tan(\\alpha)",
   "\\frac{1}{1+W^2}",
   "\\frac{1}{1+H^2}",
 ]
@@ -21,9 +21,8 @@ base_feature_names = [
 output = "KII"
 output_name = "K_{II}(\\alpha, \\hat{W}, \\hat{H})"
 
-[expansion]
+[[expansions]]
 type = "polynomial"
-[expansion.parameters]
 degree = 3
 
 [tradeoff_exploration]
@@ -34,7 +33,7 @@ log_beta_max = 0
 
 [model_selection]
 N_coeff_max = 4
-test_size = 0.2
+test_size = 0.0
 
 [training]
 polish = true

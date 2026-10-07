@@ -1,0 +1,40 @@
+[data]
+dataset = "courbeMH.csv"
+
+[model_features]
+base_features = [
+  "1/H",
+]
+base_feature_names = [
+  "1/H",
+]
+
+[model_output]
+output = "M"
+output_name = "M"
+
+[[expansions]]
+type = "polynomial"
+degree = 8
+
+[[expansions]]
+type = "custom"
+expression = "1/tanh(H/Hc)"
+Hc = [30, 35, 40, 45, 50, 55, 60]
+
+[expansion.parameters]
+degree = 8
+
+[tradeoff_exploration]
+solver = "lars"
+N_fit = 128
+log_beta_min = -2
+log_beta_max = 0
+
+[model_selection]
+N_coeff_max = 5
+test_size = 0.0
+
+[training]
+polish = true
+

@@ -3,83 +3,20 @@ dataset = "dataset.csv"
 
 [model_features]
 base_features = [
-  # "(deg2rad(phi)/pi)",
-  "sin(deg2rad(phi))",
-  "sin(2*deg2rad(phi))",
-  "sin(3*deg2rad(phi))",
-  "sin(4*deg2rad(phi))",
-  "sin(5*deg2rad(phi))",
-  "sin(6*deg2rad(phi))",
-  "sin(7*deg2rad(phi))",
-  "sin(8*deg2rad(phi))",
-  "sin(9*deg2rad(phi))",
-  "sin(10*deg2rad(phi))",
-  "sin(11*deg2rad(phi))",
-  "sin(12*deg2rad(phi))",
-  "sin(13*deg2rad(phi))",
-  "sin(14*deg2rad(phi))",
-  "sin(15*deg2rad(phi))",
-  "sin(16*deg2rad(phi))",
-  "sin(17*deg2rad(phi))",
-  "sin(18*deg2rad(phi))",
-  "sin(19*deg2rad(phi))",
-  "sin(20*deg2rad(phi))",
-  "sin(21*deg2rad(phi))",
-  "sin(22*deg2rad(phi))",
-  "sin(23*deg2rad(phi))",
-  "sin(24*deg2rad(phi))",
-  "sin(25*deg2rad(phi))",
-  "sin(26*deg2rad(phi))",
-  "sin(27*deg2rad(phi))",
-  "sin(28*deg2rad(phi))",
-  "sin(29*deg2rad(phi))",
-  "sin(30*deg2rad(phi))",
-  "sin(31*deg2rad(phi))",
-  "sin(32*deg2rad(phi))",
+  "phi",
 ]
 base_feature_names = [
-  "sin(deg2rad(phi))",
-  "sin(2*deg2rad(phi))",
-  "sin(3*deg2rad(phi))",
-  "sin(4*deg2rad(phi))",
-  "sin(5*deg2rad(phi))",
-  "sin(6*deg2rad(phi))",
-  "sin(7*deg2rad(phi))",
-  "sin(8*deg2rad(phi))",
-  "sin(9*deg2rad(phi))",
-  "sin(10*deg2rad(phi))",
-  "sin(11*deg2rad(phi))",
-  "sin(12*deg2rad(phi))",
-  "sin(13*deg2rad(phi))",
-  "sin(14*deg2rad(phi))",
-  "sin(15*deg2rad(phi))",
-  "sin(16*deg2rad(phi))",
-  "sin(17*deg2rad(phi))",
-  "sin(18*deg2rad(phi))",
-  "sin(19*deg2rad(phi))",
-  "sin(20*deg2rad(phi))",
-  "sin(21*deg2rad(phi))",
-  "sin(22*deg2rad(phi))",
-  "sin(23*deg2rad(phi))",
-  "sin(24*deg2rad(phi))",
-  "sin(25*deg2rad(phi))",
-  "sin(26*deg2rad(phi))",
-  "sin(27*deg2rad(phi))",
-  "sin(28*deg2rad(phi))",
-  "sin(29*deg2rad(phi))",
-  "sin(30*deg2rad(phi))",
-  "sin(31*deg2rad(phi))",
-  "sin(32*deg2rad(phi))",
+  "phi",
 ]
+
+[[expansions]]
+type = "custom"
+expression = "sin(n*deg2rad(phi))"
+n = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32]
 
 [model_output]
 output = "F12"
 output_name = "F12"
-
-[expansion]
-type = "polynomial"
-[expansion.parameters]
-degree = 1
 
 [tradeoff_exploration]
 solver = "lars"
